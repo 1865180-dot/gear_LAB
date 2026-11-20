@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>歯車ラボ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* 設計メモ: 製図板の方眼紙の上に、しんちゅう色の歯車を置く。1テーマ固定(明るい紙)。 */
+:root{
+  color-scheme:light;
+  --paper:#eef3f6; --grid:#d9e3ea; --panel:#ffffff; --ink:#1c2b3a; --sub:#54687a;
+  --brass:#e0a030; --blue:#2f6fb0; --accent:#e4572e; --ok:#23936a; --ng:#cf4040; --line:#c5d2dc;
+  --display:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;
+  --body:"Zen Maru Gothic","Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--body);font-weight:500;color:var(--ink);line-height:1.65;font-size:16px;
+  background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.3;margin:0;text-wrap:balance}
+p{margin:0}
+header.top{position:sticky;top:0;z-index:5;background:var(--ink);color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:8px 16px}
+.logo{font-family:var(--display);font-weight:900;font-size:20px;letter-spacing:.04em;display:flex;align-items:center;gap:8px;background:none;border:0;color:#fff;padding:4px}
+.logo svg{width:28px;height:28px}
+nav.tabs{display:flex;flex-wrap:wrap;gap:6px}
+nav.tabs button{background:transparent;border:1.5px solid #ffffff55;color:#fff;border-radius:999px;padding:4px 14px;font-weight:700;font-size:14px}
+nav.tabs button[aria-current="true"]{background:var(--brass);border-color:var(--brass);color:var(--ink)}
+nav.tabs .cnt{font-weight:500;opacity:.8;margin-left:6px;font-variant-numeric:tabular-nums}
+main{max-width:1180px;margin:0 auto;padding:18px 16px 40px}
+.panel{background:var(--panel);border:1.5px solid var(--ink);border-radius:12px;padding:16px}
+.btn{background:var(--ink);color:#fff;border:0;border-radius:10px;padding:9px 18px;font-weight:700}
+.btn.alt{background:#fff;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.go{background:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sub{color:var(--sub);font-size:14px}
+.tag{display:inline-block;font-size:12px;font-weight:700;border:1.5px solid var(--ink);border-radius:6px;padding:0 7px;background:#fff}
+/* home */
+.home-hero{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-items:center}
+.home-hero h1{font-size:34px;font-weight:900}
+.home-hero svg{width:100%;height:auto;display:block}
+.parts3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.pcard{text-align:left;background:#fff;border:1.5px solid var(--ink);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;box-shadow:4px 4px 0 var(--ink)}
+.pcard:hover{transform:translate(-1px,-1px)}
+.pcard .no{font-family:var(--display);font-weight:900;color:var(--accent);font-size:14px}
+.pcard h3{font-size:20px}
+.pcard .prog{margin-top:auto;font-size:13px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
+.flow{margin-top:16px;font-size:14px}
+.flow b{color:var(--accent)}
+/* lab */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:14px;align-items:start}
+.stage{width:100%;height:auto;display:block;background:#fff;border:1.5px solid var(--ink);border-radius:12px}
+.glabel{font-size:15px;font-weight:700;fill:var(--ink)}
+.gcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.gcard{background:#fff;border:1.5px solid var(--ink);border-top:8px solid var(--c);border-radius:10px;padding:8px 10px;font-size:13px}
+.gcard .gname{font-weight:700;font-size:14px}
+.stepper{display:flex;align-items:center;gap:6px;margin:4px 0}
+.stepper button{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--ink);background:#fff;font-weight:900;font-size:18px;line-height:1}
+.stepper b{min-width:54px;text-align:center;font-size:17px;font-variant-numeric:tabular-nums}
+.gcard dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:0 8px}
+.gcard dt{color:var(--sub)}
+.gcard dd{margin:0;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.gcard label{display:flex;gap:6px;align-items:center;font-size:12px;margin-top:4px}
+.sum{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sum .big{font-family:var(--display);font-weight:900;font-size:26px;font-variant-numeric:tabular-nums}
+.bar{height:16px;border:1.5px solid var(--ink);border-radius:8px;background:#fff;position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--blue);transition:width .3s}
+.bar.f i{background:var(--accent)}
+.bar::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:2px dashed var(--ink)}
+.barrow{display:grid;grid-template-columns:44px 1fr;gap:8px;align-items:center;font-size:13px;font-weight:700;margin-top:4px}
+.wts{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+.wts i{width:14px;height:16px;background:var(--sub);border-radius:2px 2px 4px 4px;display:block}
+.side h2{font-size:20px}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pills button{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;font-weight:900}
+.pills button.done{background:#d8f0e6}
+.pills button[aria-current="true"]{background:var(--ink);color:#fff}
+.side .txt{margin:8px 0;font-size:15px}
+.side .txt b{background:linear-gradient(transparent 62%,#ffe08a 62%)}
+.formula{font-weight:700;background:var(--paper);border:1.5px dashed var(--ink);border-radius:8px;padding:8px 10px;margin:8px 0;font-size:14px}
+.task{border-left:6px solid var(--brass);background:#fff7e3;padding:8px 10px;border-radius:0 8px 8px 0;margin:10px 0;font-size:14px;font-weight:700}
+.task.ok{border-color:var(--ok);background:#e2f5ec}
+.quiz{margin-top:10px;border-top:1.5px dashed var(--line);padding-top:10px}
+.quiz .q{font-weight:700;margin-bottom:6px}
+.quiz .ch{display:grid;gap:6px}
+.quiz .ch button{text-align:left;background:#fff;border:1.5px solid var(--ink);border-radius:8px;padding:7px 10px}
+.quiz .ch button.ok{background:#d8f0e6;border-color:var(--ok)}
+.quiz .ch button.ng{background:#fbe3e3;border-color:var(--ng)}
+.quiz .fb{margin-top:6px;font-size:14px;font-weight:700}
+.quiz .fb.ok{color:var(--ok)} .quiz .fb.ng{color:var(--ng)}
+/* zukan */
+.zukan{display:grid;grid-template-columns:240px minmax(0,1fr);gap:14px;align-items:start}
+.zlist{display:grid;gap:6px}
+.zlist button{text-align:left;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:8px 12px;font-weight:700;display:flex;justify-content:space-between;gap:8px}
+.zlist button[aria-current="true"]{background:var(--ink);color:#fff}
+.zlist .ck{color:var(--ok)}
+.zlist button[aria-current="true"] .ck{color:#9fe3c6}
+.zdetail{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+.zdetail svg{width:100%;height:auto;background:var(--paper);border:1.5px solid var(--ink);border-radius:10px;display:block}
+.zdetail h2{font-size:26px;font-weight:900}
+.zdetail ul{margin:6px 0;padding-left:1.2em}
+.slabel{font-size:14px;font-weight:700;fill:var(--ink)}
+/* game */
+.levels{display:grid;gap:16px}
+.lvgroup h2{font-size:19px;margin-bottom:8px}
+.lvrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.lv{text-align:left;background:#fff;border:1.5px solid var(--ink);border-radius:12px;padding:12px;box-shadow:3px 3px 0 var(--ink)}
+.lv b{display:block;font-size:16px}
+.stars{color:var(--brass);letter-spacing:2px;font-size:18px}
+.stars i{color:var(--line);font-style:normal}
+.ghead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;margin-bottom:8px}
+.ghead h2{font-size:22px;font-weight:900}
+.goal{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.goal span{border:1.5px solid var(--ink);border-radius:999px;padding:2px 12px;font-size:14px;font-weight:700;background:#fff}
+.goal span.ok{background:#d8f0e6;border-color:var(--ok)} .goal span.ng{background:#fbe3e3;border-color:var(--ng)}
+.pipe{display:flex;gap:6px;align-items:stretch;overflow-x:auto;padding:6px 2px 10px}
+.pcell{flex:1 1 150px;min-width:150px;max-width:230px;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:2px;font-size:12px;text-align:center}
+.pcell svg{width:100%;height:auto;background:var(--paper);border-radius:6px;display:block}
+.pcell.slot{border-style:dashed;border-width:2px;cursor:pointer}
+.pcell.slot.fill{border-style:solid}
+.pcell.slot.hot{border-color:var(--accent);background:#fff3ee}
+.pcell .nm{font-weight:700;font-size:13px}
+.pcell .out{min-height:3.2em;color:var(--blue);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.35}
+.arrow{align-self:center;font-weight:900;color:var(--sub)}
+.tray{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.tray button{background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:6px 12px;text-align:left;line-height:1.3}
+.tray button b{display:block;font-size:14px}
+.tray button small{color:var(--sub)}
+.tray button[aria-pressed="true"]{background:var(--brass)}
+.tray button:disabled{opacity:.35}
+.result{margin-top:10px;border-radius:10px;padding:12px;border:1.5px solid var(--ink);background:#fff}
+.result.ok{background:#e2f5ec} .result.ng{background:#fdeeee}
+.result h3{font-size:19px}
+.bike{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px}
+.bike svg{width:100%;height:auto;display:block;background:#fff;border:1.5px solid var(--ink);border-radius:10px}
+.seg{display:flex;gap:0;margin:4px 0 10px}
+.seg button{flex:1;background:#fff;border:1.5px solid var(--ink);padding:6px 4px;font-weight:700;font-size:14px;margin-left:-1.5px}
+.seg button:first-child{border-radius:8px 0 0 8px;margin-left:0}.seg button:last-child{border-radius:0 8px 8px 0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.meter{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:14px}
+.meter b{font-variant-numeric:tabular-nums;text-align:right}
+.toast{font-weight:700;color:var(--ng);min-height:1.6em}
+.matome ol{padding-left:1.3em;margin:8px 0}
+.matome li{margin:6px 0}
+footer{text-align:center;font-size:12px;color:var(--sub);padding:0 16px 24px}
+@media (max-width:900px){
+  .lab,.zukan,.bike,.home-hero,.zdetail{grid-template-columns:1fr}
+  .parts3{grid-template-columns:1fr}
+  .zlist{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="logo" id="logo" aria-label="ホームへ"><svg viewBox="-20 -20 40 40" aria-hidden="true"><path id="logoGear" fill="#e0a030"/><circle r="4" fill="#1c2b3a"/></svg>歯車ラボ</button>
+  <nav class="tabs" id="tabs" aria-label="メニュー"></nav>
+</header>
+<main id="app"></main>
+<footer>歯車ラボ © Irie Kanji</footer>
+<script>
+'use strict';
+const NS='http://www.w3.org/2000/svg',TAU=Math.PI*2,INK='#1c2b3a',PAPER='#eef3f6';
+const GC=['#e0a030','#5b93c4','#77b06a','#d0725c','#9a82c9'];
+const NUM=['①','②','③','④','⑤','⑥'];
+function h(tag,attrs,...kids){const e=document.createElement(tag);for(const k in attrs||{}){const v=attrs[k];if(v===false||v==null)continue;if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v===true?'':v)}for(const c of kids.flat(3)){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(String(c)))}return e}
+function sv(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs||{})e.setAttribute(k,attrs[k]);if(parent)parent.append(e);return e}
+function stext(p,x,y,t,o){const e=sv('text',Object.assign({x,y,'text-anchor':'middle',class:'slabel'},o||{}),p);e.textContent=t;return e}
+const f1=n=>String(Math.round(n*10)/10);
+const f2=n=>n.toFixed(2);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ---------- 進みぐあいの保存 ---------- */
+const KEY='haguruma-lab-v1';
+let prog={lab:{},zukan:{},game:{},matome:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s)prog=Object.assign(prog,s)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(prog))}catch(e){}}
+
+/* ---------- アニメーション ---------- */
+let anims=[],lastT=0;
+function loop(t){const dt=Math.min(0.05,(t-lastT)/1000||0);lastT=t;for(const f of anims.slice())f(dt);requestAnimationFrame(loop)}
+
+/* ---------- 歯車を描く ---------- */
+function gearPath(N,m,internal){const r=N*m/2,p=TAU/N,ra=internal?r-m*0.85:r+m*0.85,rf=internal?r+m*1.05:r-m*1.05;let d='';
+  for(let i=0;i<N;i++){const a=i*p;[[a-0.5*p,rf],[a-0.27*p,rf],[a-0.13*p,ra],[a+0.13*p,ra],[a+0.27*p,rf]].forEach(([t,R],k)=>{d+=(i===0&&k===0?'M':'L')+(R*Math.cos(t)).toFixed(2)+' '+(R*Math.sin(t)).toFixed(2)})}
+  return d+'Z'}
+function makeGear(parent,o){const r=o.N*o.m/2,g=sv('g',{},parent);
+  sv('path',{d:gearPath(o.N,o.m),fill:o.color,stroke:INK,'stroke-width':1.2,'stroke-linejoin':'round'},g);
+  const ri=r-o.m*1.05;
+  if(o.N>=20){sv('circle',{r:(ri*0.8).toFixed(1),fill:'rgba(255,255,255,.3)'},g);const n=o.N>=40?5:4;
+    for(let i=0;i<n;i++){const a=i*TAU/n+0.5;sv('circle',{cx:(Math.cos(a)*ri*0.5).toFixed(1),cy:(Math.sin(a)*ri*0.5).toFixed(1),r:(ri*0.17).toFixed(1),fill:PAPER,stroke:INK,'stroke-width':0.8},g)}}
+  sv('circle',{r:Math.max(3,o.m*0.9).toFixed(1),fill:INK},g);
+  if(o.mark!==false)sv('circle',{cx:r,cy:0,r:(o.m*0.55).toFixed(1),fill:'#e4572e',stroke:'#fff','stroke-width':0.8},g);
+  let X=o.x||0,Y=o.y||0;
+  const set=(t,x,y)=>{if(x!=null){X=x;Y=y}g.setAttribute('transform','translate('+X.toFixed(2)+' '+Y.toFixed(2)+') rotate('+(t*180/Math.PI).toFixed(2)+')')};
+  set(0);return{g,set,r}}
+/* かみ合う相手の角度: 歯1と歯2が、方向φでかみ合う */
+function meshAngle(t1,N1,N2,phi){return phi+Math.PI+(phi-t1)*N1/N2-Math.PI/N2}
+/* 平歯車の列。gs:[{N,co}] co=前の歯車と同じ軸 */
+function spurTrain(parent,gs,m,colors){const xs=[],w=[],els=[],th=[];let x=0;
+  gs.forEach((g,i)=>{if(i===0)w[0]=1;else if(g.co)w[i]=w[i-1];else{x+=(gs[i-1].N+g.N)*m/2;w[i]=-w[i-1]*gs[i-1].N/g.N}xs[i]=x});
+  gs.forEach((g,i)=>{els[i]=makeGear(parent,{N:g.N,m,x:xs[i],y:0,color:colors[i%colors.length]})});
+  function update(t){th[0]=t;els[0].set(t);for(let i=1;i<gs.length;i++){th[i]=gs[i].co?th[i-1]:meshAngle(th[i-1],gs[i-1].N,gs[i].N,0);els[i].set(th[i])}}
+  update(0);
+  let minX=1e9,maxX=-1e9,maxR=0;gs.forEach((g,i)=>{const R=g.N*m/2+m;minX=Math.min(minX,xs[i]-R);maxX=Math.max(maxX,xs[i]+R);maxR=Math.max(maxR,R)});
+  return{update,xs,w,minX,maxX,maxR}}
+function arcArrow(p,x,y,R,cw,col){const a0=-140*Math.PI/180,a1=-40*Math.PI/180,P=a=>[x+R*Math.cos(a),y+R*Math.sin(a)],s=P(a0),e=P(a1);
+  sv('path',{d:'M'+s[0].toFixed(1)+' '+s[1].toFixed(1)+' A'+R.toFixed(1)+' '+R.toFixed(1)+' 0 0 1 '+e[0].toFixed(1)+' '+e[1].toFixed(1),fill:'none',stroke:col,'stroke-width':3.5,'stroke-linecap':'round'},p);
+  const a=cw?a1:a0,q=P(a),sg=cw?1:-1,tx=-Math.sin(a)*sg,ty=Math.cos(a)*sg,nx=Math.cos(a),ny=Math.sin(a);
+  sv('polygon',{points:(q[0]+tx*13)+','+(q[1]+ty*13)+' '+(q[0]+nx*7)+','+(q[1]+ny*7)+' '+(q[0]-nx*7)+','+(q[1]-ny*7),fill:col},p)}
+/* 横から見た歯車(歯のすじが動く) */
+function sideGear(p,o){sv('rect',{x:o.x,y:o.y-o.R,width:o.w,height:2*o.R,rx:3,fill:o.color,stroke:INK,'stroke-width':1.4},p);
+  const ls=[],pp=TAU/o.N;for(let i=0;i<o.N;i++)ls.push(sv('line',{stroke:INK,'stroke-width':o.sw||2,'stroke-linecap':'round'},p));
+  return t=>{for(let i=0;i<o.N;i++){const a=t+i*pp,c=Math.cos(a),l=ls[i];if(c>0.1){const yy=o.y+o.R*Math.sin(a),dz=(o.hz||0)*c;l.setAttribute('x1',o.x+2);l.setAttribute('y1',(yy-dz).toFixed(1));l.setAttribute('x2',o.x+o.w-2);l.setAttribute('y2',(yy+dz).toFixed(1));l.setAttribute('visibility','visible')}else l.setAttribute('visibility','hidden')}}}
+/* ベルト・チェーン */
+function beltDrive(svg,o){const m=o.m||3,r1=o.chain?o.N1*m/2:o.r1,r2=o.chain?o.N2*m/2:o.r2,x1=o.x1,x2=o.x2,y=o.y,d=x2-x1,b=Math.asin((r1-r2)/d),sb=Math.sin(b),cb=Math.cos(b);
+  const P=(x,r,s)=>(x+r*sb).toFixed(1)+' '+(y+s*r*cb).toFixed(1);
+  const path='M'+P(x1,r1,-1)+' L'+P(x2,r2,-1)+' A'+r2+' '+r2+' 0 '+(r2>r1?1:0)+' 1 '+P(x2,r2,1)+' L'+P(x1,r1,1)+' A'+r1+' '+r1+' 0 '+(r1>r2?1:0)+' 1 '+P(x1,r1,-1)+'Z';
+  let w1,w2,dash;
+  if(o.chain){w1=makeGear(svg,{N:o.N1,m,x:x1,y,color:o.c1||GC[1]});w2=makeGear(svg,{N:o.N2,m,x:x2,y,color:o.c2||GC[0]});
+    const pitch=Math.PI*m;sv('path',{d:path,fill:'none',stroke:'#fff','stroke-width':7,opacity:.7},svg);
+    dash=sv('path',{d:path,fill:'none',stroke:INK,'stroke-width':5.5,'stroke-dasharray':(pitch*0.62).toFixed(2)+' '+(pitch*0.38).toFixed(2)},svg)}
+  else{const pul=(x,r,c)=>{const g=sv('g',{},svg);sv('circle',{r,fill:c,stroke:INK,'stroke-width':1.4},g);sv('circle',{r:r*0.72,fill:'rgba(255,255,255,.35)'},g);for(let i=0;i<3;i++){const a=i*TAU/3;sv('line',{x1:0,y1:0,x2:(Math.cos(a)*r*0.72).toFixed(1),y2:(Math.sin(a)*r*0.72).toFixed(1),stroke:INK,'stroke-width':3},g)}sv('circle',{r:4,fill:INK},g);sv('circle',{cx:r*0.86,r:3.5,fill:'#e4572e',stroke:'#fff','stroke-width':.8},g);return{set:t=>g.setAttribute('transform','translate('+x+' '+y+') rotate('+(t*180/Math.PI).toFixed(2)+')')}};
+    w1=pul(x1,r1,o.c1||GC[1]);w2=pul(x2,r2,o.c2||GC[0]);
+    sv('path',{d:path,fill:'none',stroke:'#3a3a3a','stroke-width':7,'stroke-linejoin':'round'},svg);
+    dash=sv('path',{d:path,fill:'none',stroke:'#c9c9c9','stroke-width':2.5,'stroke-dasharray':'9 15'},svg)}
+  return t=>{w1.set(t);w2.set(t*r1/r2);dash.setAttribute('stroke-dashoffset',(-t*r1).toFixed(1))}}
+
+/* ---------- いろいろな歯車のモデル(400×260) ---------- */
+const SC={};
+SC.spur=(svg,opt,teeth)=>{const g=sv('g',{},svg),gs=teeth.map(N=>({N})),tr=spurTrain(g,gs,4,opt.colors||GC),W=tr.maxX-tr.minX,s=Math.min(340/W,210/(2*tr.maxR),1.9);
+  g.setAttribute('transform','translate('+(200-(tr.minX+tr.maxX)/2*s).toFixed(1)+' 130) scale('+s.toFixed(3)+')');return tr.update};
+SC.shaft=(svg)=>{sv('rect',{x:20,y:118,width:360,height:24,rx:5,fill:'#9fb1c0',stroke:INK,'stroke-width':1.4},svg);return sideGear(svg,{x:150,y:130,w:100,R:22,N:10,color:'#cfd9e1'})};
+SC.motor=(svg,opt)=>{sv('rect',{x:40,y:70,width:170,height:120,rx:14,fill:'#54687a',stroke:INK,'stroke-width':1.6},svg);sv('rect',{x:40,y:92,width:170,height:16,fill:'#3d4f5f'},svg);
+  stext(svg,125,150,opt.srcName||'モーター',{fill:'#fff','font-size':30});sv('rect',{x:210,y:120,width:170,height:20,rx:4,fill:'#9fb1c0',stroke:INK,'stroke-width':1.4},svg);return sideGear(svg,{x:270,y:130,w:60,R:26,N:10,color:GC[0]})};
+SC.bevel=(svg,opt)=>{const O={x:235,y:95},R=88,k=0.55,N=16,p=TAU/N,A=[],B=[];
+  sv('rect',{x:30,y:O.y-9,width:O.x-R-30,height:18,rx:4,fill:'#9fb1c0',stroke:INK,'stroke-width':1.4},svg);
+  sv('rect',{x:O.x-9,y:O.y+R,width:18,height:70,rx:4,fill:'#9fb1c0',stroke:INK,'stroke-width':1.4},svg);
+  sv('rect',{x:O.x-R-14,y:O.y-R,width:14,height:2*R,rx:3,fill:'#b97f1c',stroke:INK,'stroke-width':1.4},svg);
+  sv('polygon',{points:[[O.x-R,O.y-R],[O.x-k*R,O.y-k*R],[O.x-k*R,O.y+k*R],[O.x-R,O.y+R]].join(' '),fill:GC[0],stroke:INK,'stroke-width':1.4,'stroke-linejoin':'round'},svg);
+  sv('rect',{x:O.x-R,y:O.y+R,width:2*R,height:14,rx:3,fill:'#3f72a0',stroke:INK,'stroke-width':1.4},svg);
+  sv('polygon',{points:[[O.x-R,O.y+R],[O.x-k*R,O.y+k*R],[O.x+k*R,O.y+k*R],[O.x+R,O.y+R]].join(' '),fill:GC[1],stroke:INK,'stroke-width':1.4,'stroke-linejoin':'round'},svg);
+  for(let i=0;i<N;i++){A.push(sv('line',{stroke:INK,'stroke-width':2,'stroke-linecap':'round'},svg));B.push(sv('line',{stroke:INK,'stroke-width':2,'stroke-linecap':'round'},svg))}
+  if(!opt.mini){stext(svg,80,O.y-22,'横向きの軸');stext(svg,O.x+70,O.y+R+60,'縦向きの軸')}
+  const L=(l,vis,x1,y1,x2,y2)=>{if(vis){l.setAttribute('x1',x1.toFixed(1));l.setAttribute('y1',y1.toFixed(1));l.setAttribute('x2',x2.toFixed(1));l.setAttribute('y2',y2.toFixed(1));l.setAttribute('visibility','visible')}else l.setAttribute('visibility','hidden')};
+  return t=>{for(let i=0;i<N;i++){const a=t+i*p,b=-t+(i+0.5)*p;L(A[i],Math.cos(a)>0.1,O.x-R+2,O.y+R*Math.sin(a)*0.98,O.x-k*R-2,O.y+k*R*Math.sin(a)*0.98);L(B[i],Math.cos(b)>0.1,O.x+R*Math.sin(b)*0.98,O.y+R-2,O.x+k*R*Math.sin(b)*0.98,O.y+k*R+2)}}};
+SC.rack=(svg,opt)=>{const N=14,m=9,r=N*m/2,cx=200,cy=92,pitch=Math.PI*m,yp=cy+r,yt=yp-m*0.85,yr=yp+m*1.05,rg=sv('g',{},svg);let d='M0 '+(yr+38)+' L0 '+yr;
+  for(let j=0;j<40;j++){const c=(j+0.5)*pitch;d+=' L'+(c-0.27*pitch).toFixed(1)+' '+yr+' L'+(c-0.13*pitch).toFixed(1)+' '+yt+' L'+(c+0.13*pitch).toFixed(1)+' '+yt+' L'+(c+0.27*pitch).toFixed(1)+' '+yr}
+  d+=' L'+(40*pitch).toFixed(1)+' '+yr+' L'+(40*pitch).toFixed(1)+' '+(yr+38)+'Z';
+  sv('path',{d,fill:GC[1],stroke:INK,'stroke-width':1.3,'stroke-linejoin':'round'},rg);
+  const flag=opt.mini?null:sv('g',{},svg);if(flag){sv('line',{x1:0,y1:yr+38,x2:0,y2:yr+10,stroke:'#e4572e','stroke-width':3},flag);sv('polygon',{points:'0,'+(yr+10)+' 22,'+(yr+18)+' 0,'+(yr+26),fill:'#e4572e'},flag)}
+  const g=makeGear(svg,{N,m,x:cx,y:cy,color:GC[0]});
+  if(!opt.mini){stext(svg,cx,22,'ピニオン(回転)');stext(svg,70,yr+62,'ラック(直線)')}
+  return t=>{g.set(t);const s=-r*(t-Math.PI/2),wr=((s%pitch)+pitch)%pitch;rg.setAttribute('transform','translate('+(cx+wr-pitch*8).toFixed(2)+' 0)');if(flag)flag.setAttribute('transform','translate('+(cx+s+pitch/2).toFixed(1)+' 0)')}};
+SC.worm=(svg,opt)=>{const N=24,m=7,r=N*m/2,cx=200,cy=168,rw=22,wy=cy-r-rw+3,x0=70,x1=330,pitch=Math.PI*m,p=TAU/N;
+  const wheel=makeGear(svg,{N,m,x:cx,y:cy,color:GC[1]});
+  sv('rect',{x:25,y:wy-8,width:350,height:16,rx:4,fill:'#9fb1c0',stroke:INK,'stroke-width':1.4},svg);
+  const id='wc'+Math.random().toString(36).slice(2,7),cp=sv('clipPath',{id},svg);sv('rect',{x:x0,y:wy-rw,width:x1-x0,height:2*rw,rx:6},cp);
+  sv('rect',{x:x0,y:wy-rw,width:x1-x0,height:2*rw,rx:6,fill:GC[0],stroke:INK,'stroke-width':1.4},svg);
+  const tg=sv('g',{'clip-path':'url(#'+id+')'},svg),ls=[],n=Math.ceil((x1-x0)/pitch)+3;for(let i=0;i<n;i++)ls.push(sv('line',{stroke:INK,'stroke-width':5,opacity:.85},tg));
+  if(!opt.mini){stext(svg,x0+40,wy-rw-10,'ウォーム');stext(svg,cx+r+38,cy+60,'ウォーム',{});stext(svg,cx+r+38,cy+78,'ホイール',{})}
+  return t=>{const th=t/N;wheel.set(th);const base=cx+r*(th+Math.PI/2+p/2),off=(((base-x0)%pitch)+pitch)%pitch;for(let i=0;i<n;i++){const X=x0-pitch+off+i*pitch;ls[i].setAttribute('x1',(X+pitch/2).toFixed(1));ls[i].setAttribute('y1',wy-rw);ls[i].setAttribute('x2',X.toFixed(1));ls[i].setAttribute('y2',wy+rw)}}};
+SC.planet=(svg,opt)=>{const m=5.2,Ns=24,Np=12,Nr=48,cx=200,cy=130,rs=Ns*m/2,rp=Np*m/2,rr=Nr*m/2,d=rs+rp,Ro=rr+m+13;
+  sv('path',{d:'M'+Ro+' 0 A'+Ro+' '+Ro+' 0 1 0 '+(-Ro)+' 0 A'+Ro+' '+Ro+' 0 1 0 '+Ro+' 0Z '+gearPath(Nr,m,true),'fill-rule':'evenodd',fill:'#9fb1c0',stroke:INK,'stroke-width':1.2,transform:'translate('+cx+' '+cy+')'},svg);
+  const sun=makeGear(svg,{N:Ns,m,x:cx,y:cy,color:GC[0]}),pl=[0,1,2].map(()=>makeGear(svg,{N:Np,m,x:cx,y:cy,color:GC[2]}));
+  const car=sv('g',{},svg);sv('polygon',{points:[0,1,2].map(k=>(Math.cos(k*TAU/3)*d).toFixed(1)+','+(Math.sin(k*TAU/3)*d).toFixed(1)).join(' '),fill:'none',stroke:'#e4572e','stroke-width':7,'stroke-linejoin':'round',opacity:.75},car);
+  [0,1,2].forEach(k=>sv('circle',{cx:(Math.cos(k*TAU/3)*d).toFixed(1),cy:(Math.sin(k*TAU/3)*d).toFixed(1),r:5,fill:'#e4572e'},car));
+  if(!opt.mini){stext(svg,52,24,'内歯車(固定)');stext(svg,345,24,'太陽歯車=入力',{'font-size':12});stext(svg,345,250,'赤いわく=出力',{'font-size':12})}
+  return t=>{const tc=t*Ns/(Ns+Nr);sun.set(t);car.setAttribute('transform','translate('+cx+' '+cy+') rotate('+(tc*180/Math.PI).toFixed(2)+')');
+    pl.forEach((g,k)=>{const phi=tc+k*TAU/3;g.set(meshAngle(t,Ns,Np,phi),cx+d*Math.cos(phi),cy+d*Math.sin(phi))})}};
+SC.pulley=(svg,opt)=>{if(!opt.mini){stext(svg,105,245,'プーリー(小)');stext(svg,290,245,'プーリー(大)')}return beltDrive(svg,{x1:105,x2:290,y:125,r1:38,r2:76})};
+SC.belt1=(svg)=>beltDrive(svg,{x1:110,x2:290,y:130,r1:55,r2:55});
+SC.chain=(svg,opt)=>{if(!opt.mini){stext(svg,100,245,'スプロケット');stext(svg,290,245,'チェーン')}return beltDrive(svg,{x1:100,x2:290,y:125,N1:14,N2:30,m:5,chain:true})};
+SC.internal=(svg,opt)=>{const m=5.5,Nr=40,Np=16,rr=Nr*m/2,rp=Np*m/2,cx=200,cy=130,Ro=rr+m+12,ring=sv('g',{},svg);
+  sv('path',{d:'M'+Ro+' 0 A'+Ro+' '+Ro+' 0 1 0 '+(-Ro)+' 0 A'+Ro+' '+Ro+' 0 1 0 '+Ro+' 0Z '+gearPath(Nr,m,true),'fill-rule':'evenodd',fill:GC[1],stroke:INK,'stroke-width':1.2},ring);
+  sv('circle',{cx:rr+m+5,r:4,fill:'#e4572e',stroke:'#fff','stroke-width':.8},ring);
+  const pin=makeGear(svg,{N:Np,m,x:cx+rr-rp,y:cy,color:GC[0]});
+  if(!opt.mini)stext(svg,52,24,'内歯車');
+  return t=>{pin.set(t);ring.setAttribute('transform','translate('+cx+' '+cy+') rotate('+(((t*Np-Math.PI)/Nr)*180/Math.PI).toFixed(2)+')')}};
+SC.helical=(svg,opt)=>{const mk=(x,hz)=>{sv('rect',{x:x-40,y:66,width:150,height:14,rx:3,fill:'#9fb1c0',stroke:INK,'stroke-width':1.2},svg);sv('rect',{x:x-40,y:160,width:150,height:14,rx:3,fill:'#9fb1c0',stroke:INK,'stroke-width':1.2},svg);
+    const a=sideGear(svg,{x,y:73,w:70,R:47,N:16,color:GC[0],hz}),b=sideGear(svg,{x,y:167,w:70,R:47,N:16,color:GC[1],hz:-hz});return t=>{a(t);b(-t+TAU/32)}};
+  const u1=opt.mini?null:mk(50,0),u2=mk(opt.mini?165:265,9);
+  if(!opt.mini){stext(svg,85,244,'平歯車(まっすぐ)');stext(svg,300,244,'はすば歯車(ななめ)')}
+  return t=>{if(u1)u1(t);u2(t)}};
+
+/* ---------- 画面の切りかえ ---------- */
+const app=document.getElementById('app');
+let cur='home';
+const TABS=[['home','ホーム'],['lab','1 実験室'],['zukan','2 歯車図鑑'],['game','3 チャレンジ'],['matome','まとめ']];
+function counts(){return{lab:Object.keys(prog.lab).length+'/'+STEPS.filter(s=>s.q).length,zukan:Object.keys(prog.zukan).length+'/'+ZUKAN.length,game:Object.keys(prog.game).length+'/'+LEVELS.length}}
+function drawTabs(){const c=counts(),nav=document.getElementById('tabs');nav.replaceChildren(...TABS.map(([id,name])=>h('button',{'aria-current':cur===id?'true':null,onclick:()=>go(id)},name,c[id]?h('span',{class:'cnt'},c[id]):null)))}
+function go(name,arg){cur=name;anims=[];drawTabs();app.replaceChildren(SCREENS[name](arg));window.scrollTo(0,0)}
+function quiz(q,done,onOk){const fb=h('p',{class:'fb'}),btns=q.c.map((t,i)=>h('button',{onclick:()=>{if(i===q.a){btns.forEach(b=>b.disabled=true);btns[i].className='ok';fb.className='fb ok';fb.textContent='正解! '+q.ex;onOk&&onOk()}else{btns[i].className='ng';fb.className='fb ng';fb.textContent='もう一度考えてみよう。'+(q.hint||'')}}},t));
+  if(done){btns.forEach(b=>b.disabled=true);btns[q.a].className='ok';fb.className='fb ok';fb.textContent='正解! '+q.ex}
+  return h('div',{class:'quiz'},h('p',{class:'q'},'問題:'+q.t),h('div',{class:'ch'},btns),fb)}
+function starsEl(n){return h('span',{class:'stars','aria-label':'星'+n+'つ'},'★'.repeat(n),h('i',{},'★'.repeat(3-n)))}
+
+/* ---------- ホーム ---------- */
+function homeScreen(){const svg=sv('svg',{viewBox:'0 0 400 260','aria-hidden':'true'}),up=SC.spur(svg,{},[20,40,10,30]);let t=0;anims.push(dt=>{t+=dt*1.6;up(t)});
+  const c=counts();
+  return h('div',{},
+    h('div',{class:'panel home-hero'},h('div',{},h('h1',{},'歯車のかみ合いを、回して学ぼう'),h('p',{style:'margin-top:8px'},'歯数を変えると、速さと力はどう変わるだろう。実験して、いろいろな歯車を知って、最後はロボットを動かす装置を組み立てよう。'),
+      h('div',{class:'row',style:'margin-top:14px'},h('button',{class:'btn go',onclick:()=>go('lab')},'実験室からはじめる'))),svg),
+    h('div',{class:'parts3'},
+      h('button',{class:'pcard',onclick:()=>go('lab')},h('span',{class:'no'},'PART 1'),h('h3',{},'実験室'),h('span',{},'平歯車を2個、3個、4個とつないで、回る向き・速度伝達比・トルクを調べる。'),h('span',{class:'prog'},'クリア '+c.lab)),
+      h('button',{class:'pcard',onclick:()=>go('zukan')},h('span',{class:'no'},'PART 2'),h('h3',{},'歯車図鑑'),h('span',{},'かさ歯車、ラックとピニオン、遊星歯車など8種類の動きを見る。'),h('span',{class:'prog'},'クリア '+c.zukan)),
+      h('button',{class:'pcard',onclick:()=>go('game')},h('span',{class:'no'},'PART 3'),h('h3',{},'チャレンジ'),h('span',{},'自転車のギアを選んだり、歯車をつないで遊園地の観覧車やメリーゴーランドを動かす。全9問。'),h('span',{class:'prog'},'クリア '+c.game))),
+    h('div',{class:'panel flow'},h('b',{},'1時間目'),' PART 1 実験室 → PART 2 歯車図鑑  ',h('b',{},'2時間目'),' PART 3 チャレンジ → まとめ。進みぐあいはこのパソコンに保存されます。 ',
+      h('button',{class:'btn alt',style:'padding:2px 10px;font-size:13px',onclick:()=>{prog={lab:{},zukan:{},game:{},matome:{}};save();go('home')}},'記録を消して最初から')))}
+
+/* ---------- PART1 実験室 ---------- */
+const IN_RPM=60,IN_TQ=0.2;
+const STEPS=[
+ {id:'s1',title:'2つの歯車を回してみよう',init:[{N:20},{N:20}],
+  txt:'左の①が、モーターにつながった<b>駆動歯車</b>。右の②が、回される<b>被動歯車</b>。赤い印と矢印を見て、回る向きをくらべよう。',
+  q:{t:'かみ合った2つの歯車の回る向きは?',c:['同じ向き','逆向き','②は回らない'],a:1,ex:'かみ合う歯車は、たがいに逆向きに回る。',hint:'矢印の向きを見よう。'}},
+ {id:'s2',title:'大きさのちがう歯車',init:[{N:20},{N:20}],
+  txt:'歯車の下の ＋ − で歯数を変えられる。歯数が多いほど大きい歯車になる。回転速度とトルク(回す力)の数字に注目しよう。',
+  task:{t:'②の歯数を①より多くして、ゆっくり力強く回そう。',ok:(G)=>G[1].N>G[0].N},
+  q:{t:'小さい歯車で大きい歯車を回すと、大きい歯車は?',c:['速く回るが、力は弱くなる','ゆっくり回るが、力は強くなる','速さも力も変わらない'],a:1,ex:'歯数が多い側は、ゆっくり・力強く回る。逆にすると、速く・力は弱くなる。',hint:'②の回転速度とトルクを①とくらべよう。'}},
+ {id:'s3',title:'速度伝達比を計算しよう',init:[{N:20},{N:60}],
+  txt:'速さがどれだけ変わるかを表す数が<b>速度伝達比</b>。',
+  formula:'速度伝達比 = 被動歯車の歯数 ÷ 駆動歯車の歯数 = 駆動の回転速度 ÷ 被動の回転速度',
+  task:{t:'速度伝達比がちょうど 2 になる組み合わせをつくろう。',ok:(G)=>G[1].N===G[0].N*2},
+  q:{t:'駆動20枚、被動60枚。駆動歯車が3回転すると、被動歯車は何回転?',c:['1回転','3回転','9回転'],a:0,ex:'速度伝達比は 60÷20=3。駆動が3回転して、やっと被動が1回転。そのかわりトルクは3倍。',hint:'歯数をもどして回転数を数えてみよう。'}},
+ {id:'s4',title:'歯車を3つにする',init:[{N:20},{N:40},{N:20}],
+  txt:'①と③の間に②を入れた。間に入る歯車を<b>遊び歯車(アイドラ)</b>という。③の速さと向きを観察しよう。',
+  task:{t:'②の歯数を変えて、③の回転速度が変わるか確かめよう。',ok:(G,f)=>f.ch1},
+  q:{t:'③の回転速度を決めているのは?',c:['①と③の歯数','②の歯数','3つの歯数の合計'],a:0,ex:'間の歯車は速さに関係しない。向きを変えるだけ。3つ並べると③は①と同じ向きになる。',hint:'②を10枚にしても60枚にしても、③の数字は?'}},
+ {id:'s5',title:'4つの歯車と2段歯車',init:[{N:10},{N:30},{N:10},{N:30}],
+  txt:'4つを一列に並べると、速度伝達比は「最後÷最初」で 3 のまま。③を②と<b>同じ軸に重ねる</b>と(2段歯車)、比が<b>かけ算</b>になる。',
+  toggle:2,
+  task:{t:'「③を②と同じ軸に重ねる」を押して、④のトルクをくらべよう。',ok:(G,f)=>f.co},
+  q:{t:'10枚→30枚、同じ軸の10枚→30枚。2段にしたときの速度伝達比は?',c:['3','6','9'],a:2,ex:'3×3=9。2段、3段と重ねると、小さな歯車でも大きな力を出せる。模型のギヤボックスもこの仕組み。',hint:'1段目で3、2段目でも3。'}},
+ {id:'s6',title:'自由実験',free:true,init:[{N:10},{N:40},{N:20},{N:60}],
+  txt:'歯車を2〜5個、好きな歯数で組んでみよう。「同じ軸に重ねる」で2段歯車にもできる。いちばん速い組み合わせ、いちばん力の強い組み合わせは?'}
+];
+function labScreen(){const root=h('div',{class:'lab'});let si=STEPS.findIndex(s=>s.q&&!prog.lab[s.id]);if(si<0)si=STEPS.length-1;let G,th=0,play=true,slow=false,flags={};
+  function load(i){si=i;G=STEPS[i].init.map(g=>Object.assign({},g));th=0;flags={};draw()}
+  function draw(){const S=STEPS[si];anims=[];
+    const svg=sv('svg',{viewBox:'0 0 900 360',class:'stage',role:'img','aria-label':'歯車の実験台'}),tg=sv('g',{},svg),tr=spurTrain(tg,G,5,GC);
+    const W=tr.maxX-tr.minX,sc=Math.min(1.3,800/W,236/(2*tr.maxR)),mid=(tr.minX+tr.maxX)/2,cy=158;
+    tg.setAttribute('transform','translate('+(450-mid*sc).toFixed(1)+' '+cy+') scale('+sc.toFixed(3)+')');
+    G.forEach((g,i)=>{const X=450+(tr.xs[i]-mid)*sc,R=(g.N*2.5+5)*sc;if(!g.co)arcArrow(svg,X,cy,R+12,tr.w[i]>0,i?'#2f6fb0':'#e4572e');
+      const t=sv('text',{x:X.toFixed(1),y:(cy+tr.maxR*sc+34+(g.co?20:0)).toFixed(1),'text-anchor':'middle',class:'glabel'},svg);t.textContent=NUM[i]+' '+g.N+'枚'+(g.co?'(同じ軸)':'')});
+    const turnEls=[],last=G.length-1;
+    const role=i=>i===0?'駆動歯車':i===last?'被動歯車':'中間の歯車';
+    const cards=G.map((g,i)=>{const aw=Math.abs(tr.w[i]),rpm=IN_RPM*aw,tq=IN_TQ/aw;turnEls[i]=h('dd',{},'0.0');
+      const chg=d=>{const n=clamp(g.N+d,10,60);if(n!==g.N){g.N=n;flags['ch'+i]=true;draw()}};
+      return h('div',{class:'gcard',style:'--c:'+GC[i%5]},h('div',{class:'gname'},NUM[i]+' '+role(i)),
+        h('div',{class:'stepper'},h('button',{'aria-label':NUM[i]+'の歯数を減らす',onclick:()=>chg(-10),disabled:g.N<=10},'−'),h('b',{},g.N+'枚'),h('button',{'aria-label':NUM[i]+'の歯数を増やす',onclick:()=>chg(10),disabled:g.N>=60},'＋')),
+        h('dl',{},h('dt',{},'向き'),h('dd',{},tr.w[i]>0?'右回り':'左回り'),h('dt',{},'回転速度'),h('dd',{},f1(rpm)+' 回/分'),h('dt',{},'トルク'),h('dd',{},f2(tq)+' N·m'),h('dt',{},'おもり'),h('dd',{},f1(tq*10)+' 個分'),h('dt',{},'回った数'),turnEls[i]),
+        S.free&&i>=2?h('label',{},h('input',{type:'checkbox',id:'co'+i,checked:g.co?true:null,onchange:e=>{g.co=e.target.checked;draw()}}),'前の歯車と同じ軸に重ねる'):null)});
+    const wl=Math.abs(tr.w[last]),ratio=1/wl,tqL=IN_TQ/wl,bw=f=>clamp(50+9.6*Math.log2(f),4,100).toFixed(0)+'%';
+    const simple=G.length===2?G[1].N+' ÷ '+G[0].N+' = ':'';
+    const sum=h('div',{class:'sum'},
+      h('div',{class:'panel'},h('div',{class:'sub'},'全体の速度伝達比(①→'+NUM[last]+')'),h('div',{class:'big'},simple+f2(ratio).replace(/\.?0+$/,'')),
+        h('div',{class:'barrow'},'速さ',h('div',{class:'bar'},h('i',{style:'width:'+bw(wl)}))),h('div',{class:'barrow'},'力',h('div',{class:'bar f'},h('i',{style:'width:'+bw(1/wl)}))),h('div',{class:'sub'},'点線が①と同じ。速さが増えると、力は同じ割合で減る。')),
+      h('div',{class:'panel'},h('div',{class:'sub'},NUM[last]+'が持ち上げられるおもり'),h('div',{class:'big'},f1(tqL*10)+' 個分'),h('div',{class:'wts'},Array.from({length:Math.min(40,Math.round(tqL*10))},()=>h('i'))),
+        h('div',{class:'sub'},'おもり1個=100g。軸に半径10cmの糸巻きをつけたときに持ち上がる数。モーターは '+IN_RPM+' 回/分、'+f2(IN_TQ)+' N·m。')));
+    const ctrl=h('div',{class:'row',style:'margin-top:10px'},
+      h('button',{class:'btn',onclick:()=>{play=!play;draw()}},play?'止める':'回す'),
+      h('button',{class:'btn alt','aria-pressed':String(slow),onclick:()=>{slow=!slow;draw()}},slow?'ふつうの速さにする':'スローで見る'),
+      h('button',{class:'btn alt',onclick:()=>{th=0;draw()}},'回った数を0にもどす'),
+      S.toggle?h('button',{class:'btn go',onclick:()=>{G[S.toggle].co=!G[S.toggle].co;flags.co=true;draw()}},G[S.toggle].co?'③を一列にもどす':'③を②と同じ軸に重ねる'):null,
+      S.free?[h('button',{class:'btn alt',disabled:G.length>=5,onclick:()=>{G.push({N:20});draw()}},'歯車を増やす'),h('button',{class:'btn alt',disabled:G.length<=2,onclick:()=>{G.pop();draw()}},'歯車を減らす')]:null);
+    if(S.task&&S.task.ok(G,flags))flags.task=true;
+    const quizOk=flags.quiz||prog.lab[S.id];
+    const side=h('div',{class:'panel side'},
+      h('div',{class:'pills'},STEPS.map((s,i)=>h('button',{class:prog.lab[s.id]?'done':'','aria-current':i===si?'true':null,'aria-label':'ステップ'+(i+1),onclick:()=>load(i)},i+1))),
+      h('h2',{},'ステップ'+(si+1)+' '+S.title),h('p',{class:'txt',html:S.txt}),
+      S.formula?h('div',{class:'formula'},S.formula):null,
+      S.task?h('div',{class:'task'+(flags.task?' ok':'')},(flags.task?'できた! ':'やってみよう:')+S.task.t):null,
+      S.q&&(!S.task||flags.task||quizOk)?quiz(S.q,quizOk,()=>{flags.quiz=true;prog.lab[S.id]=true;save();drawTabs();draw()}):null,
+      quizOk&&si<STEPS.length-1?h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn go',onclick:()=>load(si+1)},'次のステップへ')):null,
+      S.free?h('div',{class:'row',style:'margin-top:10px'},h('button',{class:'btn go',onclick:()=>go('zukan')},'歯車図鑑へ進む')):null);
+    root.replaceChildren(h('div',{},svg,ctrl,h('div',{class:'gcards'},cards),sum),side);
+    const upd=()=>{tr.update(th);for(let i=0;i<G.length;i++)turnEls[i].textContent=(Math.abs(th*tr.w[i])/TAU).toFixed(1)};upd();
+    anims.push(dt=>{if(play){th+=dt*TAU*(slow?0.2:1)*IN_RPM/60;upd()}})}
+  load(si);return root}
+
+/* ---------- PART2 歯車図鑑 ---------- */
+const ZUKAN=[
+ {id:'bevel',name:'かさ歯車',sc:'bevel',sp:1.6,what:'かさ(傘)のような形の歯車。2つを直角にかみ合わせて、回転の軸の向きを90°変える。',ex:['手回しドリル','ハンドミキサー(泡立て器)','自動車の差動装置(デフ)'],
+  q:{t:'かさ歯車を使うと何ができる?',c:['回転の軸の向きを変える','回転を直線の動きに変える','かならず速く回せる'],a:0,ex:'横向きの回転を縦向きに伝えたいときに使う。'}},
+ {id:'rack',name:'ラックとピニオン',sc:'rack',osc:2.1,what:'小さな歯車(ピニオン)と、歯のついたまっすぐな棒(ラック)。回転を直線の動きに変える。ラックを押せば、直線を回転に変えることもできる。',ex:['自動車のハンドル(ステアリング)','卓上ボール盤の上下ハンドル','自動ドア'],
+  q:{t:'ピニオンを逆に回すと、ラックは?',c:['逆向きに動く','同じ向きに動き続ける','止まる'],a:0,ex:'回す向きで、ラックの進む向きが決まる。'}},
+ {id:'worm',name:'ウォームギヤ',sc:'worm',sp:9,what:'ねじの形をしたウォームと、それにかみ合うウォームホイール。1組で大きく減速して、力をとても強くできる。ホイール側からは回せないものが多く(セルフロック)、軸の向きも90°変わる。',ex:['ギターの糸巻き(ペグ)','扇風機の首ふり','エレベーターの巻き上げ機'],
+  q:{t:'ウォームが1回転すると、ホイールは歯1枚分だけ進む。歯数24のホイールを1回転させるには、ウォームを何回転?',c:['1回転','12回転','24回転'],a:2,ex:'速度伝達比は24。たった1組で24倍の力になる。'}},
+ {id:'planet',name:'遊星歯車',sc:'planet',sp:2.4,what:'中心の太陽歯車、そのまわりを回る遊星歯車、外側の内歯車の組み合わせ。小さくまとまって大きく減速でき、入力と出力の軸が一直線になる。',ex:['電動ドライバー','自転車の内装変速機','ハイブリッド車の動力分割機構'],
+  q:{t:'このモデルで、動かないように固定されているのは?',c:['外側の内歯車','中心の太陽歯車','遊星歯車'],a:0,ex:'太陽24枚・内歯車48枚なので、太陽が3回転すると赤いわく(出力)が1回転する。向きは入力と同じ。'}},
+ {id:'pulley',name:'プーリーとベルト',sc:'pulley',sp:2.2,what:'プーリー(ベルト車)にベルトをかけて、はなれた軸に回転を伝える。2つは同じ向きに回る。速度伝達比はプーリーの直径の比で決まる。ベルトはすべることがある。',ex:['洗濯機','ミシン','卓上ボール盤の変速'],
+  q:{t:'ベルトをふつうにかけたとき、2つのプーリーの回る向きは?',c:['同じ向き','逆向き','交互に変わる'],a:0,ex:'歯車どうしとちがって同じ向き。ベルトを8の字にかけると逆向きにできる。'}},
+ {id:'chain',name:'チェーンとスプロケット',sc:'chain',sp:2.2,what:'歯のついた車(スプロケット)にチェーンをかけて、はなれた軸に回転を伝える。向きは同じ。チェーンが歯に引っかかるので、すべらない。',ex:['自転車','オートバイ','工場のコンベヤ'],
+  q:{t:'ベルトとくらべたときの、チェーンの特ちょうは?',c:['すべらずに確実に伝わる','音がまったくしない','回る向きが逆になる'],a:0,ex:'強い力でもすべらない。自転車のペダルの力を後ろのタイヤに伝えている。'}},
+ {id:'internal',name:'内歯車',sc:'internal',sp:1.8,what:'輪の内側に歯がある歯車。中の小さな歯車と同じ向きに回る。2つの軸を近くに置ける。',ex:['遊星歯車装置の外側','手回しのえんぴつけずり','ロボットの関節の減速機'],
+  q:{t:'内歯車と、中の小さな歯車の回る向きは?',c:['同じ向き','逆向き','内歯車は回らない'],a:0,ex:'外どうしでかみ合う平歯車は逆向き。内側でかみ合うと同じ向きになる。'}},
+ {id:'helical',name:'はすば歯車',sc:'helical',sp:1.5,what:'歯がななめについた歯車。歯が少しずつかみ合っていくので、平歯車より静かでなめらかに回る。そのかわり、軸の方向に押す力が生まれる。',ex:['自動車の変速機(トランスミッション)','電動工具','工場の減速機'],
+  q:{t:'平歯車とくらべたときの、はすば歯車の良い点は?',c:['音が静かで、なめらかに回る','回転の軸が90°変わる','回転が直線の動きに変わる'],a:0,ex:'ななめの歯が少しずつかみ合うので、音やしん動が小さい。'}}
+];
+function zukanScreen(){const root=h('div',{class:'zukan'});let zi=ZUKAN.findIndex(z=>!prog.zukan[z.id]);if(zi<0)zi=0;
+  function draw(){anims=[];const Z=ZUKAN[zi],svg=sv('svg',{viewBox:'0 0 400 260',role:'img','aria-label':Z.name+'の動くモデル'}),up=SC[Z.sc](svg,{});let t=0,play=true;
+    anims.push(dt=>{if(!play)return;t+=dt;up(Z.osc?Math.PI/2+Z.osc*Math.sin(t*1.1):t*Z.sp)});up(Z.osc?Math.PI/2:0);
+    const pb=h('button',{class:'btn alt',onclick:()=>{play=!play;pb.textContent=play?'止める':'動かす'}},'止める');
+    root.replaceChildren(
+      h('div',{class:'zlist'},ZUKAN.map((z,i)=>h('button',{'aria-current':i===zi?'true':null,onclick:()=>{zi=i;draw()}},z.name,prog.zukan[z.id]?h('span',{class:'ck'},'✔'):null))),
+      h('div',{class:'panel zdetail'},h('div',{},svg,h('div',{class:'row',style:'margin-top:8px'},pb)),
+        h('div',{},h('h2',{},Z.name),h('p',{style:'margin-top:6px'},Z.what),h('p',{class:'sub',style:'margin-top:10px;font-weight:700'},'身のまわりの例'),h('ul',{},Z.ex.map(e=>h('li',{},e))),
+          quiz(Z.q,prog.zukan[Z.id],()=>{prog.zukan[Z.id]=true;save();drawTabs();draw()}),
+          prog.zukan[Z.id]?h('div',{class:'row',style:'margin-top:10px'},zi<ZUKAN.length-1?h('button',{class:'btn go',onclick:()=>{zi++;draw()}},'次の歯車へ'):h('button',{class:'btn go',onclick:()=>go('game')},'チャレンジへ進む')):null)))}
+  draw();return root}
+
+/* ---------- PART3 チャレンジ ---------- */
+const PARTS={
+ red3:{name:'平歯車ペア 小→大',sub:'10枚→30枚',ratio:3,flip:true,sc:(s,o)=>SC.spur(s,o,[10,30])},
+ inc3:{name:'平歯車ペア 大→小',sub:'30枚→10枚',ratio:1/3,flip:true,sc:(s,o)=>SC.spur(s,o,[30,10])},
+ eq:{name:'平歯車ペア 同じ大きさ',sub:'20枚→20枚',ratio:1,flip:true,sc:(s,o)=>SC.spur(s,o,[20,20])},
+ belt:{name:'プーリーとベルト',sub:'同じ大きさ',ratio:1,sc:(s,o)=>SC.belt1(s,o)},
+ bevel:{name:'かさ歯車',sub:'同じ歯数',ratio:1,axis:true,sc:(s,o)=>SC.bevel(s,o)},
+ worm:{name:'ウォームギヤ',sub:'速度伝達比20',ratio:20,axis:true,lock:true,sc:(s,o)=>SC.worm(s,o)},
+ planet:{name:'遊星歯車',sub:'速度伝達比3',ratio:3,sc:(s,o)=>SC.planet(s,o)},
+ rack:{name:'ラックとピニオン',sub:'回転→直線',linear:true,sc:(s,o)=>SC.rack(s,o)}
+};
+const SEG_FLAT=6,SEG_UP=30,PEDAL_TQ=30;
+const LEVELS=[
+ {id:'b1',grp:0,type:'bike',title:'平らな道でスピードを出せ',story:'100mの平らな道。20秒以内にゴールしよう。前と後ろのギアを選んでからスタート。',segs:[{len:100}],limit:20,lock:true,stars:t=>t<=13?3:t<=17?2:1,
+  win:'前を大きく、後ろを小さくすると、ペダル1回転でタイヤがたくさん回る。速度伝達比(後ろ÷前)が小さいほど速い。そのかわりタイヤを回す力は弱い。',hint:'ペダル1回転でタイヤをたくさん回したい。前(ペダル側)と後ろ(タイヤ側)、どちらを大きくする?'},
+ {id:'b2',grp:0,type:'bike',title:'急な坂を登れ',story:'急な坂道。タイヤを回す力が足りないと登れない。35秒以内に頂上へ。',segs:[{len:6},{len:30,up:true},{len:4}],limit:35,lock:true,stars:t=>t<=21?3:2,
+  win:'前を小さく、後ろを大きくすると、速度伝達比が大きくなり、タイヤを回す力が強くなる。そのかわりスピードはおそい。',hint:'坂では「タイヤを回す力」が30 N·m以上必要。速度伝達比(後ろ÷前)を大きくしよう。'},
+ {id:'b3',grp:0,type:'bike',title:'山ありコースをかけぬけろ',story:'平地→急な坂→平地。走りながらギアを切りかえて、60秒以内にゴールしよう。',segs:[{len:60},{len:20,up:true},{len:60}],limit:60,lock:false,stars:t=>t<=30?3:t<=45?2:1,
+  win:'平地は速いギア、坂は力の強いギア。場面に合わせて速度伝達比を変えるのが変速機の役目。自動車も同じ考え方で走っている。',hint:'平地では速いギア、坂の手前で力の強いギアに切りかえよう。'},
+ {id:'d1',grp:1,type:'pipe',title:'うしろ向きロボット',story:'モーターは右回り。でもロボットは、軸が左回りのときに前へ進む。部品をはめて、ロボットを旗まで進めよう。',in:{rpm:60,tq:0.2},vis:1,slots:2,tray:{eq:2,belt:1},goal:{dir:-1},scene:'robot',best:1,
+  win:'平歯車を1組入れると向きが逆になる。2組入れると元にもどる。ベルトは向きを変えない。',hint:'かみ合う歯車は逆向きに回る。では2回逆にすると?'},
+ {id:'d2',grp:1,type:'pipe',title:'水車で石うすを回せ',story:'水車の軸は横向き。石うすの軸は縦向き。回転の軸の向きを変えて、石うすを回そう。',in:{rpm:60,tq:0.2},srcName:'水車',vis:1,slots:2,tray:{eq:1,belt:1,bevel:1,rack:1},goal:{axis:'縦'},scene:'mill',best:1,
+  win:'かさ歯車は、回転の軸を90°変える。昔の水車小屋でも同じ仕組みが使われていた。',hint:'図鑑で「軸の向きを90°変える」と書いてあった歯車は?'},
+ {id:'d3',grp:1,type:'pipe',title:'重いゲートを開けろ',story:'ゲートはまっすぐ上に持ち上げて開ける。重いので、5 N以上の力で押し上げる必要がある。',in:{rpm:60,tq:0.1},vis:1,slots:3,tray:{red3:2,inc3:1,bevel:1,rack:1},goal:{linear:true,minForce:5},scene:'gate',best:2,
+  win:'減速して力を強くしてから、ラックとピニオンで直線の動きに変える。順番も大切。',hint:'回転を直線に変える部品は最後に置く。その前に、力を強くする部品を入れよう。'},
+ {id:'p1',grp:2,type:'board',title:'観覧車を回せ',story:'モーターはずっと右回りに回っている。光る穴に歯車をはめて動力をつなぎ、観覧車を右回りに回そう。',motor:[4,11],ferris:{at:[32,11],dir:1},tray:{s:3,m:3,l:3},best:5,
+  win:'かみ合う歯車は1つごとに逆向きになる。だから、間に入れる歯車の数で最後の向きが決まる。間にいくつ入れても、観覧車の速さはモーターの歯車と観覧車の歯車の歯数だけで決まる。',hint:'歯車1つごとに向きが逆になる。間に入れる数を1つ変えてみよう。'},
+ {id:'p2',grp:2,type:'board',title:'メリーゴーランドを回せ',story:'メリーゴーランドの軸は縦向き。ななめや下にも歯車をつないで動力を運び、最後に軸の向きを変えよう。',motor:[4,8],mgr:{at:[33,16]},tray:{s:4,m:4,l:4,b:1},best:7,
+  win:'平歯車だけでは、同じ向きの軸にしか伝えられない。かさ歯車を使うと、回転の軸を90°変えて縦の軸を回せる。',hint:'点線の丸の穴には「かさ歯車つき」をはめる。中と大の歯車は、ななめにもかみ合う場所がある。'},
+ {id:'p3',grp:2,type:'board',title:'遊園地をまるごと動かせ',story:'モーターは1つだけ。動力を2つに分けて、観覧車(左回り)とメリーゴーランドの両方を回そう。',motor:[22,11],ferris:{at:[36,7],dir:-1},mgr:{at:[9,15]},tray:{s:4,m:5,l:3,b:1},best:8,
+  win:'1つの歯車に2つの歯車をかみ合わせると、動力を分けられる。工場の機械や時計も、1つの動力をたくさんの歯車で分けて使っている。',hint:'モーターの歯車の上と下、両方に歯車をかみ合わせると動力を分けられる。観覧車の向きは、間の歯車の数で調整しよう。'}
+];
+const GROUPS=['問題1 自転車のギア','問題2 向きを変える','問題3 遊園地のアトラクションを動かす'];
+function gameScreen(id){if(id){const L=LEVELS.find(l=>l.id===id);return L.type==='bike'?bikeScreen(L):L.type==='board'?boardScreen(L):pipeScreen(L)}
+  return h('div',{class:'levels'},GROUPS.map((g,gi)=>h('div',{class:'panel lvgroup'},h('h2',{},g),h('div',{class:'lvrow'},LEVELS.filter(l=>l.grp===gi).map((l,i)=>h('button',{class:'lv',onclick:()=>go('game',l.id)},h('span',{class:'tag'},(gi+1)+'-'+(i+1)),h('b',{},l.title),starsEl(prog.game[l.id]||0))))))) }
+function nextLevel(L){const i=LEVELS.indexOf(L);return i<LEVELS.length-1?h('button',{class:'btn go',onclick:()=>go('game',LEVELS[i+1].id)},'次の問題へ'):h('button',{class:'btn go',onclick:()=>go('matome')},'まとめへ')}
+function gameHead(L){const g=LEVELS.filter(l=>l.grp===L.grp);return h('div',{class:'ghead'},h('button',{class:'btn alt',onclick:()=>go('game')},'← 問題一覧'),h('span',{class:'tag'},(L.grp+1)+'-'+(g.indexOf(L)+1)),h('h2',{},L.title))}
+function win(L,stars){prog.game[L.id]=Math.max(prog.game[L.id]||0,stars);save();drawTabs()}
+
+/* 自転車 */
+function bikeScreen(L){const root=h('div',{});const FR=[20,30,40],RR=[10,20,30],FN=['小','中','大'];let F=30,R=20,run=false,done=false,pos=0,t=0,stall=0,thF=0,drvUp=null;
+  const total=L.segs.reduce((a,s)=>a+s.len,0),sx=700/total,pts=[[50,170]];L.segs.forEach(s=>{const p=pts[pts.length-1],dx=s.len*sx;pts.push([p[0]+dx,p[1]-(s.up?dx*0.42:0)])});
+  const crs=sv('svg',{viewBox:'0 0 800 215',role:'img','aria-label':'コース'});
+  sv('polygon',{points:'0,215 0,170 '+pts.map(p=>p.join(',')).join(' ')+' 800,'+pts[pts.length-1][1]+' 800,215',fill:'#cfe3c4',stroke:INK,'stroke-width':1.5},crs);
+  const gp=pts[pts.length-1];sv('line',{x1:gp[0],y1:gp[1],x2:gp[0],y2:gp[1]-46,stroke:INK,'stroke-width':3},crs);sv('polygon',{points:gp[0]+','+(gp[1]-46)+' '+(gp[0]+30)+','+(gp[1]-36)+' '+gp[0]+','+(gp[1]-26),fill:'#e4572e',stroke:INK},crs);
+  L.segs.forEach((s,i)=>{if(s.up)stext(crs,(pts[i][0]+pts[i+1][0])/2+34,(pts[i][1]+pts[i+1][1])/2+34,'急な坂',{'font-size':15})});
+  const bk=sv('g',{},crs),wh=[-17,17].map(x=>{const g=sv('g',{},bk);sv('circle',{r:12,fill:'#fff',stroke:INK,'stroke-width':3},g);sv('line',{x1:-12,y1:0,x2:12,y2:0,stroke:INK,'stroke-width':1.2},g);sv('line',{x1:0,y1:-12,x2:0,y2:12,stroke:INK,'stroke-width':1.2},g);return{g,x}});
+  sv('path',{d:'M-17 -12 L-4 -30 L12 -30 L17 -12 M-4 -30 L2 -12 L-17 -12 M12 -30 L10 -37 L16 -38',fill:'none',stroke:'#2f6fb0','stroke-width':3,'stroke-linejoin':'round','stroke-linecap':'round'},bk);
+  sv('path',{d:'M-5 -33 L4 -50 L13 -37 M4 -50 L5 -53',fill:'none',stroke:INK,'stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'},bk);sv('circle',{cx:7,cy:-59,r:7,fill:'#e0a030',stroke:INK,'stroke-width':1.5},bk);
+  const at=p=>{let a=0;for(let i=0;i<L.segs.length;i++){const s=L.segs[i];if(p<=a+s.len||i===L.segs.length-1){const f=clamp((p-a)/s.len,0,1),A=pts[i],B=pts[i+1];return{x:A[0]+(B[0]-A[0])*f,y:A[1]+(B[1]-A[1])*f,ang:Math.atan2(B[1]-A[1],B[0]-A[0]),seg:s}}a+=s.len}};
+  const drv=sv('svg',{viewBox:'0 0 420 262',role:'img','aria-label':'ペダルとチェーン'});
+  let crank,spokes;
+  function buildDrive(){drv.replaceChildren();sv('circle',{cx:115,cy:122,r:104,fill:'none',stroke:'#3a3a3a','stroke-width':9},drv);spokes=sv('g',{},drv);for(let i=0;i<8;i++){const a=i*TAU/8;sv('line',{x1:0,y1:0,x2:(Math.cos(a)*100).toFixed(1),y2:(Math.sin(a)*100).toFixed(1),stroke:'#9fb1c0','stroke-width':1.5},spokes)}
+    drvUp=beltDrive(drv,{x1:115,x2:305,y:122,N1:R,N2:F,m:3,chain:true,c1:GC[1],c2:GC[0]});crank=sv('g',{},drv);sv('line',{x1:0,y1:0,x2:70,y2:0,stroke:INK,'stroke-width':7,'stroke-linecap':'round'},crank);sv('rect',{x:58,y:-6,width:26,height:12,rx:3,fill:'#e4572e',stroke:INK},crank);
+    stext(drv,115,254,'後ろ '+R+'枚(タイヤ側)',{'font-size':13});stext(drv,318,254,'前 '+F+'枚(ペダル側)',{'font-size':13})}
+  const mT=h('b'),mV=h('b'),mR=h('b'),mQ=h('b'),mN=h('b'),toast=h('p',{class:'toast'}),res=h('div'),segF=h('div',{class:'seg'}),segR=h('div',{class:'seg'}),startB=h('button',{class:'btn go'});
+  function ctl(){const lock=L.lock&&run&&!done;segF.replaceChildren(...FR.map((n,i)=>h('button',{'aria-pressed':String(F===n),disabled:lock?true:null,onclick:()=>{F=n;ctl()}},FN[i]+' '+n+'枚')));segR.replaceChildren(...RR.map((n,i)=>h('button',{'aria-pressed':String(R===n),disabled:lock?true:null,onclick:()=>{R=n;ctl()}},FN[i]+' '+n+'枚')));
+    buildDrive();mR.textContent=R+' ÷ '+F+' = '+f2(R/F);mQ.textContent=f1(PEDAL_TQ*R/F)+' N·m';startB.textContent=run?'やり直す':'スタート'}
+  startB.addEventListener('click',()=>{if(run){run=false;done=false;pos=0;t=0;stall=0;res.replaceChildren();toast.textContent=''}else{run=true;done=false;pos=0;t=0;stall=0;res.replaceChildren()}ctl()});
+  function finish(ok,why){done=true;if(ok){const s=L.stars(t);win(L,s);res.replaceChildren(h('div',{class:'result ok'},h('h3',{},'ゴール! タイム '+f1(t)+' 秒 ',starsEl(s)),h('p',{},L.win),h('div',{class:'row',style:'margin-top:8px'},s<3?h('span',{class:'sub'},'もっと速いギアの組み合わせもある。'):null,nextLevel(L))))}
+    else res.replaceChildren(h('div',{class:'result ng'},h('h3',{},why==='stall'?'坂でペダルが重くて進めない':'時間切れ'),h('p',{},'ヒント:'+L.hint)));ctl()}
+  anims.push(dt=>{const a=at(pos),need=a.seg.up?SEG_UP:SEG_FLAT,tq=PEDAL_TQ*R/F,can=tq>=need-1e-9;let v=0;
+    if(run&&!done){t+=dt;if(can){v=2*F/R;stall=0;toast.textContent=''}else{stall+=dt;toast.textContent='ペダルが重くて進めない! タイヤを回す力が足りない。'}pos+=v*dt;thF+=can?TAU*dt:0;
+      if(pos>=total){pos=total;finish(true)}else if(t>=L.limit)finish(false,'time');else if(L.lock&&stall>1.4)finish(false,'stall')}
+    const b=at(pos);bk.setAttribute('transform','translate('+b.x.toFixed(1)+' '+b.y.toFixed(1)+') rotate('+(b.ang*180/Math.PI).toFixed(1)+')');wh.forEach(w=>w.g.setAttribute('transform','translate('+w.x+' -12) rotate('+(pos*90).toFixed(0)+')'));
+    const thR=thF*F/R;if(drvUp)drvUp(thR);spokes.setAttribute('transform','translate(115 122) rotate('+(thR*180/Math.PI).toFixed(1)+')');crank.setAttribute('transform','translate(305 122) rotate('+(thF*180/Math.PI).toFixed(1)+')');
+    mT.textContent=f1(t)+' 秒 / '+L.limit+' 秒';mV.textContent=f1(v*3.6)+' km/h';mN.textContent=need+' N·m('+(a.seg.up?'坂':'平地')+')'});
+  ctl();
+  root.append(gameHead(L),h('p',{},L.story),h('div',{class:'bike',style:'margin-top:10px'},
+    h('div',{},crs,h('div',{class:'row',style:'margin-top:8px'},startB,toast),res),
+    h('div',{class:'panel'},drv,h('div',{class:'sub',style:'font-weight:700;margin-top:6px'},'前ギア(ペダル側)'),segF,h('div',{class:'sub',style:'font-weight:700'},'後ろギア(タイヤ側)'),segR,
+      h('div',{class:'meter'},h('span',{},'時間'),mT,h('span',{},'スピード'),mV,h('span',{},'速度伝達比(後ろ÷前)'),mR,h('span',{},'タイヤを回す力'),mQ,h('span',{},'今の道に必要な力'),mN),
+      h('p',{class:'sub',style:'margin-top:6px'},'ペダルは毎秒1回転、30 N·mの力でこぐ。'))));
+  return root}
+
+/* ゴールの場面 */
+function goalScene(svg,kind){sv('line',{x1:0,y1:190,x2:300,y2:190,stroke:INK,'stroke-width':2.5},svg);let prop={},mode='idle',T=0;
+  if(kind==='robot'){sv('line',{x1:262,y1:190,x2:262,y2:120,stroke:INK,'stroke-width':3},svg);sv('polygon',{points:'262,120 290,130 262,140',fill:'#e4572e',stroke:INK},svg)}
+  if(kind==='mill'){sv('ellipse',{cx:205,cy:172,rx:62,ry:18,fill:'#9fb1c0',stroke:INK,'stroke-width':1.5},svg);sv('rect',{x:143,y:140,width:124,height:32,fill:'#b7c4cf',stroke:INK,'stroke-width':1.5},svg);sv('ellipse',{cx:205,cy:140,rx:62,ry:18,fill:'#d5dde3',stroke:INK,'stroke-width':1.5},svg);sv('rect',{x:201,y:96,width:8,height:44,fill:'#9fb1c0',stroke:INK},svg);prop.dot=sv('circle',{r:6,fill:'#e4572e',stroke:INK},svg);prop.g=sv('g',{},svg)}
+  if(kind==='gate'){sv('rect',{x:176,y:60,width:8,height:130,fill:'#54687a'},svg);sv('rect',{x:216,y:60,width:8,height:130,fill:'#54687a'},svg);prop.gate=sv('rect',{x:184,y:84,width:32,height:106,fill:'#d0725c',stroke:INK,'stroke-width':1.5},svg)}
+  if(kind==='lift'){sv('rect',{x:96,y:40,width:8,height:150,fill:'#54687a'},svg);sv('rect',{x:216,y:40,width:8,height:150,fill:'#54687a'},svg);sv('rect',{x:236,y:84,width:64,height:8,fill:'#54687a'},svg);prop.plat=sv('rect',{x:104,y:182,width:112,height:8,fill:'#e0a030',stroke:INK,'stroke-width':1.5},svg)}
+  const rob=sv('g',{},svg),whl=[-15,15].map(x=>{const g=sv('g',{},rob);sv('circle',{r:11,fill:'#fff',stroke:INK,'stroke-width':3},g);sv('line',{x1:-10,y1:0,x2:10,y2:0,stroke:INK,'stroke-width':2},g);return{g,x}});
+  sv('rect',{x:-25,y:-68,width:50,height:48,rx:6,fill:'#5b93c4',stroke:INK,'stroke-width':1.8},rob);sv('rect',{x:-13,y:-58,width:26,height:16,rx:3,fill:'#fff',stroke:INK,'stroke-width':1.2},rob);
+  if(kind==='robot'&&true)prop.box=sv('rect',{x:-18,y:-128,width:36,height:0,fill:'#b98a4a',stroke:INK},rob);
+  sv('rect',{x:-18,y:-98,width:36,height:28,rx:6,fill:'#77b06a',stroke:INK,'stroke-width':1.8},rob);sv('line',{x1:0,y1:-98,x2:0,y2:-110,stroke:INK,'stroke-width':2},rob);sv('circle',{cx:0,cy:-113,r:4,fill:'#e4572e',stroke:INK},rob);
+  const eyes=sv('g',{},rob);sv('circle',{cx:-8,cy:-85,r:4,fill:INK},eyes);sv('circle',{cx:8,cy:-85,r:4,fill:INK},eyes);const bad=stext(rob,0,-79,'× ×',{'font-size':16,visibility:'hidden'});
+  const arm=sv('path',{fill:'none',stroke:INK,'stroke-width':4,'stroke-linecap':'round'},rob);
+  const X0={robot:48,mill:60,gate:70,lift:160}[kind];
+  function tick(dt){T+=dt;let x=X0,y=190,rot=0,spin=0,up=false;const ok=mode==='ok';
+    if(kind==='robot'){if(ok){x=X0+Math.min(T*45,170);spin=T*5;if(T*45>=170){y-=Math.abs(Math.sin(T*6))*8;up=true}}else if(mode==='back'){x=X0-Math.min(T*30,70);spin=-T*4}else if(mode==='weak'){x=X0+Math.sin(T*40)*2}else if(mode==='slow'){x=X0+Math.min(T*5,40);spin=T}else if(mode==='fast'){x=X0+Math.min(T*150,120);spin=T*30;rot=clamp((T-0.5)*220,0,90)}}
+    if(kind==='mill'){const a=ok?T*3:0,sh=(mode!=='idle'&&!ok)?Math.sin(T*40)*2:0;prop.dot.setAttribute('cx',(205+Math.cos(a)*46+sh).toFixed(1));prop.dot.setAttribute('cy',(140+Math.sin(a)*13).toFixed(1));up=ok}
+    if(kind==='gate'){let o=0;if(ok)o=-Math.min(T*38,104);else if(mode==='weak')o=Math.sin(T*35)*2;prop.gate.setAttribute('y',(84+o).toFixed(1));if(ok&&T>2.9){x=X0+Math.min((T-2.9)*50,190);spin=T*5;up=true}}
+    if(kind==='lift'){let hgt=0;if(ok)hgt=Math.min(T*34,98);else if(mode==='drop'){hgt=T<2.9?Math.min(T*34,98):Math.max(0,98-Math.pow(Math.max(0,T-3.5)*26,2))}else if(mode==='weak')hgt=Math.abs(Math.sin(T*35))*2;prop.plat.setAttribute('y',(182-hgt).toFixed(1));y=182-hgt;up=ok&&hgt>=98}
+    rob.setAttribute('transform','translate('+x.toFixed(1)+' '+y.toFixed(1)+') rotate('+rot.toFixed(0)+')');whl.forEach(w=>w.g.setAttribute('transform','translate('+w.x+' -11) rotate('+(spin*57.3).toFixed(0)+')'));
+    arm.setAttribute('d',up?'M-25 -58 L-38 -78 M25 -58 L38 -78':'M-25 -58 L-36 -40 M25 -58 L36 -40')}
+  tick(0);
+  return{tick,start(m){mode=m;T=0;const b=m!=='ok'&&m!=='idle';bad.setAttribute('visibility',b?'visible':'hidden');eyes.setAttribute('visibility',b?'hidden':'visible')}}}
+
+/* 部品をつないで計算する */
+function runTrain(L,slots){const st={rpm:L.in.rpm,tq:L.in.tq,dir:1,axis:'横',linear:false,lock:false,err:null},outs=[];
+  slots.forEach((id,i)=>{if(st.err){outs[i]=null;return}const before=Object.assign({},st);if(id){const p=PARTS[id];if(st.linear){st.err='直線の動きのあとに、回転する部品はつなげない。';outs[i]={err:true,before};return}
+      if(p.linear){st.linear=true;st.force=st.tq/0.05;st.cms=st.rpm/60*TAU*5}else{st.rpm/=p.ratio;st.tq*=p.ratio;if(p.flip)st.dir*=-1;if(p.axis)st.axis=st.axis==='横'?'縦':'横';if(p.lock)st.lock=true}}
+    outs[i]=Object.assign({before},st)});
+  return{st,outs}}
+function descr(s){return s.linear?['直線 '+f1(s.cms)+' cm/秒','押す力 '+f1(s.force)+' N(おもり'+f1(s.force)+'個分)']:[f1(s.rpm)+' 回/分・'+(s.dir>0?'右回り':'左回り')+'・'+s.axis+'軸','トルク '+f2(s.tq)+' N·m(おもり'+f1(s.tq*10)+'個分)']}
+function goalList(L){const g=L.goal,a=[];if(g.linear)a.push({k:'linear',l:'動き:まっすぐ(直線)'});if(g.axis)a.push({k:'axis',l:'軸の向き:'+g.axis+'向き'});if(g.dir)a.push({k:'dir',l:'回る向き:'+(g.dir>0?'右回り':'左回り')});if(g.minTq)a.push({k:'tq',l:'トルク:'+f2(g.minTq)+' N·m以上'});if(g.minForce)a.push({k:'force',l:'押す力:'+g.minForce+' N以上'});if(g.minRpm)a.push({k:'rpm',l:'速さ:'+g.minRpm+'〜'+g.maxRpm+' 回/分'});if(g.lock)a.push({k:'lock',l:'止めても落ちない'});return a}
+function judge(L,st){const g=L.goal;if(st.err)return{ok:false,kind:'idle',res:{},msg:st.err};const r={};let kind=null;const set=(k,ok,kd)=>{r[k]=ok;if(!ok&&!kind)kind=kd};
+  if(g.linear)set('linear',st.linear,'idle');else if(st.linear){return{ok:false,kind:'idle',res:{},msg:'ゴールは回転の動きが必要。直線に変えてしまうと回せない。'}}
+  if(g.axis)set('axis',st.axis===g.axis,'weak');if(g.dir)set('dir',st.dir===g.dir,'back');if(g.minTq)set('tq',st.tq>=g.minTq-1e-9,'weak');if(g.minForce)set('force',st.linear&&st.force>=g.minForce-1e-9,'weak');
+  if(g.minRpm){const lo=st.rpm>=g.minRpm-1e-9,hi=st.rpm<=g.maxRpm+1e-9;set('rpm',lo&&hi,lo?'fast':'slow')}if(g.lock)set('lock',st.lock,'drop');
+  const MSG={idle:'動きの種類が合っていない。',weak:g.axis&&!r.axis?'軸の向きが合わず、かみ合わない。':'力が足りなくて動かない。',back:'向きが逆で、うしろに進んでしまった。',slow:'おそすぎて時間切れ。',fast:'速すぎてひっくり返った。しかも力は足りている?',drop:'持ち上がったが、モーターを止めたら落ちてしまった。'};
+  return{ok:!kind,kind:kind||'ok',res:r,msg:kind?MSG[kind]:''}}
+function pipeScreen(L){const root=h('div',{});let slots=Array(L.slots).fill(null),tray=Object.assign({},L.tray),sel=null,running=false;
+  function draw(){anims=[];const used=slots.filter(Boolean).length,calc=running?runTrain(L,slots):null,jd=running?judge(L,calc.st):null,ups=[],goals=goalList(L);
+    const cell=(cls,nm,build,out,click)=>{const svg=sv('svg',{viewBox:'0 0 400 260','aria-hidden':'true'}),up=build(svg);up(0);ups.push(up);return h('div',{class:'pcell '+cls,onclick:click,role:click?'button':null,tabindex:click?'0':null,onkeydown:click?(e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();click()}}):null},h('div',{class:'nm'},nm),svg,h('div',{class:'out'},out))};
+    const src=descr({rpm:L.in.rpm,tq:L.in.tq,dir:1,axis:'横'});
+    const cells=[cell('',L.srcName||'モーター',s=>SC.motor(s,{mini:true,srcName:L.srcName}),[src[0],h('br'),src[1]])];
+    slots.forEach((id,i)=>{cells.push(h('span',{class:'arrow'},'→'));const o=calc&&calc.outs[i];let out=id?PARTS[id].sub:'ここにはめる';if(running)out=!o?'':o.err?'つながらない':(d=>[d[0],h('br'),d[1]])(descr(o));
+      cells.push(cell('slot'+(id?' fill':'')+(sel&&!running?' hot':''),NUM[i]+' '+(id?PARTS[id].name:'あき'),s=>id?PARTS[id].sc(s,{mini:true}):SC.shaft(s),out,running?null:()=>{if(slots[i]){tray[slots[i]]++;slots[i]=null}if(sel&&tray[sel]>0){slots[i]=sel;tray[sel]--;if(!tray[sel])sel=null}draw()}))});
+    cells.push(h('span',{class:'arrow'},'→'));const gsvg=sv('svg',{viewBox:'0 0 300 220',role:'img','aria-label':'ゴール'}),gs=goalScene(gsvg,L.scene);
+    cells.push(h('div',{class:'pcell',style:'min-width:200px'},h('div',{class:'nm'},'ゴール'),gsvg));
+    const res=h('div');
+    const trayEl=h('div',{class:'tray'},Object.keys(L.tray).map(id=>h('button',{'aria-pressed':String(sel===id),disabled:running||!tray[id]?true:null,onclick:()=>{sel=sel===id?null:id;draw()}},h('b',{},PARTS[id].name+' ×'+tray[id]),h('small',{},PARTS[id].sub))));
+    root.replaceChildren(gameHead(L),h('p',{},L.story),
+      h('div',{class:'goal'},h('b',{},'ゴールの条件'),goals.map(g=>h('span',{class:jd&&g.k in jd.res?(jd.res[g.k]?'ok':'ng'):''},(jd&&g.k in jd.res?(jd.res[g.k]?'○ ':'× '):'')+g.l))),
+      h('div',{class:'pipe'},cells),
+      h('p',{class:'sub'},running?'':'部品箱の部品を選んでから、はめたい場所(①②…)を押す。はめた部品を押すと外せる。あきの場所は、軸でそのままつながる。'),trayEl,
+      h('div',{class:'row'},running?h('button',{class:'btn',onclick:()=>{running=false;draw()}},'組み直す'):h('button',{class:'btn go',onclick:()=>{running=true;sel=null;draw()}},'スタート'),
+        running?null:h('button',{class:'btn alt',onclick:()=>{slots=Array(L.slots).fill(null);tray=Object.assign({},L.tray);sel=null;draw()}},'全部外す')),res);
+    if(running){const ang=ups.map(()=>0),om=[L.in.rpm];calc.outs.forEach((o,i)=>{om[i+1]=o&&!o.err?o.before.rpm*o.before.dir*(o.before.linear?0:1):0});let T=0,shown=false;gs.start(jd.kind);
+      anims.push(dt=>{T+=dt;const stop=jd.kind==='drop'&&T>2.9||jd.kind==='weak'&&T>0.5;for(let i=0;i<ups.length;i++){if(!stop)ang[i]+=om[i]/60*TAU*L.vis*dt;ups[i](ang[i]+(i&&slots[i-1]==='rack'?Math.PI/2:0))}gs.tick(dt);
+        if(!shown&&T>(jd.kind==='drop'?4.4:jd.ok?3.2:2)){shown=true;if(jd.ok){const s=used<=L.best?3:used===L.best+1?2:1;win(L,s);res.replaceChildren(h('div',{class:'result ok'},h('h3',{},'成功! 部品'+used+'個 ',starsEl(s)),h('p',{},L.win),h('div',{class:'row',style:'margin-top:8px'},s<3?h('span',{class:'sub'},'もっと少ない部品でもできる。'):null,nextLevel(L))))}
+          else res.replaceChildren(h('div',{class:'result ng'},h('h3',{},jd.msg),h('p',{},'ヒント:'+L.hint)))}})}}
+  draw();return root}
+
+/* 問題3: 広い盤面に歯車を置いて動力をつなぐ */
+const U=20,BM=4,BW=44,BH=22;
+const BPARTS={s:{name:'平歯車 小',sub:'10枚',N:10,col:GC[2]},m:{name:'平歯車 中',sub:'20枚',N:20,col:GC[1]},l:{name:'平歯車 大',sub:'30枚',N:30,col:GC[3]},b:{name:'かさ歯車つき',sub:'20枚・軸の向きを変える',N:20,col:GC[4],bevel:true}};
+const brad=g=>g.N/10;
+function boardSolve(gs){const w=gs.map(()=>null),par=gs.map(()=>-1),order=[0];w[0]=1;let jam=false;
+  for(let q=0;q<order.length;q++){const i=order[q],a=gs[i];for(let j=0;j<gs.length;j++){if(j===i)continue;const b=gs[j],dx=b.x-a.x,dy=b.y-a.y,s=brad(a)+brad(b);if(dx*dx+dy*dy!==s*s)continue;const ww=-w[i]*a.N/b.N;if(w[j]==null){w[j]=ww;par[j]=i;order.push(j)}else if(Math.abs(w[j]-ww)>1e-9)jam=true}}
+  return{w,par,order,jam}}
+function drawFerris(svg,cx,cy,dir){const R=126;sv('path',{d:'M'+(cx-78)+' 440 L'+cx+' '+cy+' L'+(cx+78)+' 440',fill:'none',stroke:'#54687a','stroke-width':9,'stroke-linejoin':'round'},svg);
+  const rot=sv('g',{},svg);sv('circle',{r:R,fill:'none',stroke:'#54687a','stroke-width':5},rot);sv('circle',{r:R*0.6,fill:'none',stroke:'#9fb1c0','stroke-width':2},rot);for(let i=0;i<8;i++){const a=i*TAU/8;sv('line',{x1:0,y1:0,x2:(Math.cos(a)*R).toFixed(1),y2:(Math.sin(a)*R).toFixed(1),stroke:'#9fb1c0','stroke-width':3},rot)}
+  const gon=[];for(let i=0;i<8;i++){const g=sv('g',{},svg);sv('line',{x1:0,y1:0,x2:0,y2:8,stroke:INK,'stroke-width':2},g);sv('rect',{x:-12,y:8,width:24,height:19,rx:5,fill:GC[i%5],stroke:INK,'stroke-width':1.3},g);sv('rect',{x:-7,y:12,width:14,height:7,rx:2,fill:'#fff'},g);gon.push(g)}
+  arcArrow(svg,cx,cy,R+16,dir>0,'#e4572e');if(cy-R-26>=16)stext(svg,cx,cy-R-26,'観覧車('+(dir>0?'右回り':'左回り')+'に回す)');else stext(svg,cx-R-14,26,'観覧車('+(dir>0?'右回り':'左回り')+'に回す)',{'text-anchor':'end'});
+  const up=t=>{rot.setAttribute('transform','translate('+cx+' '+cy+') rotate('+(t*180/Math.PI).toFixed(2)+')');gon.forEach((g,i)=>{const a=t+i*TAU/8;g.setAttribute('transform','translate('+(cx+R*Math.cos(a)).toFixed(1)+' '+(cy+R*Math.sin(a)).toFixed(1)+')')})};up(0);return up}
+function drawMgr(svg,cx,jy){const py=jy-64,top=py-150,hs=[],ls=[];
+  sv('rect',{x:cx-5,y:top+30,width:10,height:jy-52-top-30,fill:'#9fb1c0',stroke:INK,'stroke-width':1.2},svg);
+  const back=sv('g',{},svg);
+  sv('rect',{x:cx-104,y:py,width:208,height:12,rx:4,fill:'#d0725c',stroke:INK,'stroke-width':1.5},svg);
+  sv('polygon',{points:(cx-112)+','+(top+44)+' '+cx+','+top+' '+(cx+112)+','+(top+44),fill:'#e0a030',stroke:INK,'stroke-width':1.5,'stroke-linejoin':'round'},svg);
+  for(let i=0;i<7;i++)sv('path',{d:'M'+(cx-112+i*32)+' '+(top+44)+' q16 16 32 0',fill:i%2?'#fff':'#d0725c',stroke:INK,'stroke-width':1.2},svg);
+  sv('circle',{cx,cy:top-4,r:6,fill:'#e4572e',stroke:INK},svg);
+  const front=sv('g',{},svg);
+  for(let i=0;i<6;i++){const g=sv('g',{},svg);sv('line',{x1:0,y1:-62,x2:0,y2:20,stroke:'#54687a','stroke-width':2.5},g);sv('ellipse',{cx:0,cy:-8,rx:15,ry:8,fill:'#fff',stroke:INK,'stroke-width':1.3},g);sv('circle',{cx:14,cy:-19,r:6,fill:'#fff',stroke:INK,'stroke-width':1.3},g);sv('path',{d:'M-9 -2 L-10 10 M8 -2 L9 10',stroke:INK,'stroke-width':2,fill:'none'},g);sv('rect',{x:-5,y:-15,width:10,height:6,rx:2,fill:GC[i%5],stroke:INK,'stroke-width':1},g);hs.push(g)}
+  sv('polygon',{points:(cx-34)+','+(jy-52)+' '+(cx+34)+','+(jy-52)+' '+(cx+22)+','+(jy-28)+' '+(cx-22)+','+(jy-28),fill:'#c9b8e6',stroke:INK,'stroke-width':1.4,'stroke-linejoin':'round'},svg);
+  for(let i=0;i<12;i++)ls.push(sv('line',{stroke:INK,'stroke-width':1.8},svg));
+  stext(svg,cx,top-18,'メリーゴーランド(縦の軸)');
+  const up=t=>{hs.forEach((g,i)=>{const a=t+i*TAU/6,c=Math.cos(a);(c>=0?front:back).append(g);g.setAttribute('opacity',c>=0?1:0.4);g.setAttribute('transform','translate('+(cx+86*Math.sin(a)).toFixed(1)+' '+(py-34+Math.sin(a*2+i)*6).toFixed(1)+') scale('+(0.8+0.2*c).toFixed(2)+')')});
+    ls.forEach((l,i)=>{const b=t+i*TAU/12,sn=Math.sin(b);if(Math.cos(b)>0.1){l.setAttribute('x1',(cx+33*sn).toFixed(1));l.setAttribute('y1',jy-51);l.setAttribute('x2',(cx+21*sn).toFixed(1));l.setAttribute('y2',jy-29);l.setAttribute('visibility','visible')}else l.setAttribute('visibility','hidden')})};up(0);return up}
+function boardScreen(L){const root=h('div',{});let placed=[],tray=Object.assign({},L.tray),sel=null,won=false,th=0;
+  const all=()=>{const a=[{x:L.motor[0],y:L.motor[1],N:10,motor:true}];if(L.ferris)a.push({x:L.ferris.at[0],y:L.ferris.at[1],N:30,ferris:true});return a.concat(placed)};
+  function cands(N){const r=N/10,gs=all(),out=[];for(let x=r;x<=BW-r;x++)for(let y=r;y<=BH-r;y++){let mesh=false,bad=false;for(const g of gs){const d2=(g.x-x)*(g.x-x)+(g.y-y)*(g.y-y),s=r+brad(g);if(d2<s*s){bad=true;break}if(d2===s*s)mesh=true}if(!bad&&(mesh||(L.mgr&&x===L.mgr.at[0]&&y===L.mgr.at[1])))out.push([x,y])}return out}
+  function draw(){anims=[];const gs=all(),sol=boardSolve(gs),svg=sv('svg',{viewBox:'0 0 '+BW*U+' '+BH*U,class:'stage',role:'img','aria-label':'歯車をはめる盤面'});
+    const pid='dots'+Math.random().toString(36).slice(2,7),pat=sv('pattern',{id:pid,width:U,height:U,patternUnits:'userSpaceOnUse',x:-U/2,y:-U/2},sv('defs',{},svg));sv('circle',{cx:U/2,cy:U/2,r:1.4,fill:'#b9c7d2'},pat);
+    sv('rect',{width:BW*U,height:BH*U,fill:'#fff'},svg);sv('rect',{width:BW*U,height:BH*U,fill:'url(#'+pid+')'},svg);
+    const fUp=L.ferris?drawFerris(svg,L.ferris.at[0]*U,L.ferris.at[1]*U,L.ferris.dir):null;
+    const mx=L.motor[0]*U,my=L.motor[1]*U;sv('rect',{x:mx-36,y:my-30,width:72,height:60,rx:10,fill:'#54687a',stroke:INK,'stroke-width':1.5},svg);stext(svg,mx,my-38,'モーター(右回り)',{'font-size':13});
+    if(L.mgr){sv('circle',{cx:L.mgr.at[0]*U,cy:L.mgr.at[1]*U,r:2*U,fill:'#f4effb',stroke:'#9a82c9','stroke-width':2.5,'stroke-dasharray':'7 5'},svg);stext(svg,L.mgr.at[0]*U,L.mgr.at[1]*U+2*U+18,'かさ歯車の穴',{'font-size':13})}
+    const els=gs.map((g,i)=>{const pt=g.part?BPARTS[g.part]:null,e=makeGear(svg,{N:g.N,m:BM,x:g.x*U,y:g.y*U,color:g.motor?GC[0]:g.ferris?'#9fb1c0':pt.col});
+      if(pt&&pt.bevel){const r=e.r;sv('circle',{r:r*0.72,fill:'#e4dbf3',stroke:INK,'stroke-width':1.2},e.g);for(let k=0;k<12;k++){const a=k*TAU/12;sv('line',{x1:(Math.cos(a)*r*0.4).toFixed(1),y1:(Math.sin(a)*r*0.4).toFixed(1),x2:(Math.cos(a)*r*0.72).toFixed(1),y2:(Math.sin(a)*r*0.72).toFixed(1),stroke:INK,'stroke-width':1.5},e.g)}sv('circle',{r:r*0.4,fill:'#9a82c9',stroke:INK,'stroke-width':1.2},e.g);sv('circle',{r:4,fill:INK},e.g)}
+      if(g.part){e.g.style.cursor='pointer';e.g.setAttribute('data-g',g.x+','+g.y);e.g.addEventListener('click',()=>{tray[g.part]++;placed=placed.filter(p=>p!==g);won=false;draw()})}return e});
+    const jg=L.mgr?gs.findIndex(g=>g.part&&g.x===L.mgr.at[0]&&g.y===L.mgr.at[1]):-1,mUp=L.mgr?drawMgr(svg,L.mgr.at[0]*U,L.mgr.at[1]*U):null;
+    if(sel&&tray[sel]>0)cands(BPARTS[sel].N).forEach(([x,y])=>{const c=sv('circle',{cx:x*U,cy:y*U,r:8.5,fill:'#e4572e',stroke:'#fff','stroke-width':2.5,opacity:.9,'data-c':x+','+y,tabindex:0,role:'button','aria-label':'ここにはめる'},svg);c.style.cursor='pointer';
+      const put=()=>{placed.push({x,y,N:BPARTS[sel].N,part:sel});tray[sel]--;if(!tray[sel])sel=null;draw()};c.addEventListener('click',put);c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();put()}})});
+    const chips=[];let ok=!sol.jam;
+    if(L.ferris){const w=sol.w[1],good=w!=null&&!sol.jam&&Math.sign(w)===L.ferris.dir;ok=ok&&good;chips.push([good?'ok':w!=null&&!sol.jam?'ng':'','観覧車:'+(sol.jam?'動かない':w==null?'まだ止まっている':good?'○ '+(w>0?'右':'左')+'回りで回っている':'× 逆向き('+(w>0?'右':'左')+'回り)に回っている')])}
+    if(L.mgr){const pw=jg>=0&&sol.w[jg]!=null&&!sol.jam,good=pw&&BPARTS[gs[jg].part].bevel;ok=ok&&good;chips.push([good?'ok':pw?'ng':'','メリーゴーランド:'+(good?'○ 回っている':pw?'× 平歯車では縦の軸に伝わらない':'まだ止まっている')])}
+    if(sol.jam)chips.push(['ng','× 歯車がロックして動かない(輪になってかみ合っている歯車を外そう)']);
+    const res=h('div');
+    const showWin=()=>{const n=placed.length,s=n<=L.best?3:n<=L.best+2?2:1;win(L,s);res.replaceChildren(h('div',{class:'result ok'},h('h3',{},'成功! 歯車'+n+'個 ',starsEl(s)),h('p',{},L.win),h('div',{class:'row',style:'margin-top:8px'},s<3?h('span',{class:'sub'},'もっと少ない歯車でもつなげる。'):null,nextLevel(L))))};
+    if(won)showWin();
+    root.replaceChildren(gameHead(L),h('p',{},L.story),h('div',{class:'goal'},chips.map(c=>h('span',{class:c[0]},c[1]))),svg,
+      h('p',{class:'sub',style:'margin-top:6px'},sel?'赤く光る穴を押すと、そこに歯車がはまる。':'下の歯車を選ぶと、かみ合う穴が赤く光る。はめた歯車を押すと外せる。'),
+      h('div',{class:'tray'},Object.keys(L.tray).map(id=>h('button',{'aria-pressed':String(sel===id),disabled:tray[id]?null:true,onclick:()=>{sel=sel===id?null:id;draw()}},h('b',{},BPARTS[id].name+' ×'+tray[id]),h('small',{},BPARTS[id].sub))),
+        h('button',{onclick:()=>{placed=[];tray=Object.assign({},L.tray);sel=null;won=false;draw()}},h('b',{},'全部外す'),h('small',{},'最初からやり直す'))),
+      h('p',{class:'sub'},'ヒント:'+L.hint),res);
+    const ang=gs.map(()=>0);let okT=0;
+    const upd=()=>{if(!sol.jam)for(const i of sol.order){if(i===0)ang[0]=th;else{const p=sol.par[i],a=gs[p],b=gs[i];ang[i]=meshAngle(ang[p],a.N,b.N,Math.atan2(b.y-a.y,b.x-a.x))}els[i].set(ang[i])}
+      if(fUp)fUp(sol.w[1]!=null&&!sol.jam?ang[1]:0);if(mUp)mUp(jg>=0&&sol.w[jg]!=null&&!sol.jam&&BPARTS[gs[jg].part].bevel?ang[jg]:0)};upd();
+    anims.push(dt=>{th+=dt*2.4;upd();if(ok&&!won){okT+=dt;if(okT>2.2){won=true;showWin()}}})}
+  draw();return root}
+
+/* ---------- まとめ ---------- */
+const MQ=[{id:'q1',t:'速く走る電気自動車の模型をつくりたい。モーターからタイヤまでの速度伝達比は?',c:['小さくする(減速を少なくする)','大きくする(たくさん減速する)','どちらでも同じ'],a:0,ex:'速度伝達比が小さいほどタイヤは速く回る。ただしトルクは小さくなるので、坂や重い車体は苦手。'},
+ {id:'q2',t:'坂を登る力の強い電気自動車の模型をつくりたい。どうする?',c:['モーター側を小さい歯車、タイヤ側を大きい歯車にして、速度伝達比を大きくする','モーター側を大きい歯車、タイヤ側を小さい歯車にする','歯車を使わず直接つなぐ'],a:0,ex:'速度伝達比を大きくするとトルクが大きくなる。2段、3段と重ねるとさらに強くなる。'}];
+function matomeScreen(){const root=h('div',{class:'panel matome'});function draw(){root.replaceChildren(h('h2',{style:'font-size:24px;font-weight:900'},'まとめ'),
+  h('ol',{},h('li',{},'かみ合う歯車は、たがいに',h('b',{},'逆向き'),'に回る。間に1つ入れると元の向きにもどる。'),
+    h('li',{},h('b',{},'速度伝達比 = 被動歯車の歯数 ÷ 駆動歯車の歯数'),'。'),
+    h('li',{},'速度伝達比が大きいと、',h('b',{},'おそいが力(トルク)は強い'),'。小さいと、',h('b',{},'速いが力は弱い'),'。速さと力を両方いっぺんに増やすことはできない。'),
+    h('li',{},'歯車の種類を選ぶと、軸の向きを変えたり(かさ歯車)、直線の動きに変えたり(ラックとピニオン)、逆から回せなくしたり(ウォームギヤ)できる。')),
+  h('p',{style:'font-weight:700;margin-top:10px'},'次の時間は、電気自動車の模型をつくる。作戦を考えよう。'),
+  MQ.map(q=>quiz(q,prog.matome[q.id],()=>{prog.matome[q.id]=true;save();draw()})),
+  prog.matome.q1&&prog.matome.q2?h('p',{class:'task ok',style:'margin-top:12px'},'これで準備は完了。自分の車は「速さ」と「力」のどちらを大切にするか、歯車の組み合わせをノートにかいておこう。'):null)}
+  draw();return root}
+
+const SCREENS={home:homeScreen,lab:labScreen,zukan:zukanScreen,game:gameScreen,matome:matomeScreen};
+document.getElementById('logoGear').setAttribute('d',gearPath(10,3.2));
+document.getElementById('logo').addEventListener('click',()=>go('home'));
+go('home');requestAnimationFrame(loop);
+</script>
+</body>
+</html>
